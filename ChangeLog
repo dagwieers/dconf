@@ -6,7 +6,7 @@
 - Allow to write to different output file or stdout
 - Add cron= config option to add to cron (hourly, daily, weekly or monthly)
 - Add include= config option to include custom configfiles (eg. /etc/dconf-custom.conf)
-- Added gzip support
+- Added gzip and bzip2 support
 - Added cleanup hook to remove unfinished logfiles when interrupted
 - Initial public release
 

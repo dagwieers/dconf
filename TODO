@@ -6,8 +6,8 @@
 ### Output
 + Sort the different sections
 + Allow XML or HTML output (in some way)
-+ Make gzip output optional and allow for no compression or bz2 compression
 
 ### Query tool (dconf-diff)
-+ Added tool to smart diff between 2 dates (say: dconf-diff '1 day ago')
-+ Get people logged on directly from utmp database (based on given dates)
++ Add tool to smart diff between 2 dates (say: dconf-diff '1 day ago')
++ Add tool to restore files from dconf log
++ Get logged-on people directly from utmp database (based on given dates)

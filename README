@@ -1,0 +1,12 @@
+Dconf is a tool to collect a system's hardware and software configuration.
+It allows to take your system configuration with you on the road, compare
+identical systems (like nodes in a cluster) to troubleshoot HW or SW
+problems.
+
+Dconf is also useful in projects where you have to manage changes as a
+team. Dconf can send out system changes to a list of email addresses so
+that they can be revised and discussed in group.
+
+You can customize your dconf configuration for specific needs, like making
+a profile of your laptop's hardware or copy specific software configuration
+files to send out or compare with other systems.

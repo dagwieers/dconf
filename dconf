@@ -9,10 +9,6 @@ VERSION = "0.3"
 enable = ('yes', 'on', 'true', '1')
 disable = ('no', 'off', 'false', '0')
 
-extension = '.gz'
-hostname = os.uname()[1].split('.')[0]
-timestamp = time.strftime('%Y%m%d-%H%M%S', time.localtime()) 
-
 class Options:
 	def __init__(self, args):
 		self.configfile = '/etc/dconf.conf'
@@ -99,6 +95,7 @@ class Config:
 			else:
 				die(6, 'Error accessing file: %s' % configfile)
 
+		self.compression = self.getoption('main', 'compression', 'gzip')
 		self.cron = self.getoption('main', 'cron', None)
 		self.logdir = self.getoption('main', 'logdir', '/var/log/dconf')
 		self.mailto = self.getoption('main', 'mailto', None)
@@ -201,8 +198,8 @@ def diff(fromfile, tofile):
 	msg = ''
 #	fromfd = file(fromfile)
 #	tofd = file(tofile)
-	fromfd = gzip.open(fromfile)
-	tofd = gzip.open(tofile)
+	fromfd = open(fromfile)
+	tofd = open(tofile)
 	for line in difflib.unified_diff(fromfd.readlines(), tofd.readlines(), fromfile, tofile, os.stat(fromfile).st_mtime, os.stat(tofile).st_mtime):
 		msg = msg + line
 	tofd.close()
@@ -216,10 +213,10 @@ def mail(subject, msg):
 	for email in cf.mailto.split():
 		msg = 'To: %s\n' % email + \
 			'Subject: %s\n\n' % subject + \
-			'Current time: ...\n' + \
-			'System information: ...\n' + \
-			'Uptime: ...\n' + \
-			'Currently logged on users: ...\n\n' + \
+			'Current time:\n' + os.popen('date').read() + \
+			'System information:\n'+ os.popen('uname -a').read() + \
+			'Uptime:\n' + os.popen('uptime').read() + \
+			'Currently logged on users:\n' + os.popen('who').read() + '\n' + \
 			subject + '\n\n' + msg
 		smtp.sendmail('dconf@%s' % os.uname()[1], email, msg)
 	smtp.quit()
@@ -256,13 +253,13 @@ def main():
 	else:
 		if op.output:
 			logfile = op.output
-   			log = gzip.open(logfile, 'w')
+   			log = open(logfile, 'w')
 		else:
 			logfile = os.path.join(cf.logdir, 'dconf-' + hostname + '-' + timestamp + '.log' + extension)
 			mkdir(cf.logdir)
 			os.chmod(cf.logdir, 0700)
 #  			log = open(logfile, 'w')
-			log = gzip.open(logfile, 'w')
+			log = open(logfile, 'w')
 			latestlog = os.path.join(cf.logdir, 'dconf-' + hostname + '-latest.log' + extension)
 			previouslog = os.path.join(cf.logdir, 'dconf-' + hostname + '-previous.log' + extension)
 			oldestlog = os.path.join(cf.logdir, 'dconf-' + hostname + '-oldest.log' + extension)
@@ -334,8 +331,8 @@ def main():
 
 	if os.path.isfile(latestlog):
 		import md5
-		md5old = md5.new(); file = gzip.open(latestlog, 'r'); md5old.update(file.read()); file.close()
-		md5new = md5.new(); file = gzip.open(logfile, 'r'); md5new.update(file.read()); file.close()
+		md5old = md5.new(); file = open(latestlog, 'r'); md5old.update(file.read()); file.close()
+		md5new = md5.new(); file = open(logfile, 'r'); md5new.update(file.read()); file.close()
 
 		if md5old.digest() != md5new.digest():
 			info(2, 'New logfile is different than last logfile, keeping.')
@@ -352,7 +349,7 @@ def main():
 		symlink(logfile, previouslog)
 		symlink(logfile, latestlog)
 		if cf.mailto:
-			mail('initial config for %s' % os.uname()[1], gzip.open(logfile, 'r').read())
+			mail('initial config for %s' % os.uname()[1], open(logfile, 'r').read())
 
 ### Workaround for python <= 2.2.1
 try:
@@ -373,6 +370,18 @@ if __name__ == '__main__':
 			cf.includefile(cfgfile)
 		else:
 			info(3, 'Configfile %s does not exist, ignoring.')
+
+	extension = ''
+	if cf.compression == 'bzip2':
+		from bz2 import BZ2File as open
+		extension = '.bz2'
+	elif cf.compression == 'gzip':
+		from gzip import open
+		extension = '.gz'
+
+	hostname = os.uname()[1].split('.')[0]
+	timestamp = time.strftime('%Y%m%d-%H%M%S', time.localtime()) 
+
 	try:
 		main()
 	except KeyboardInterrupt, e:
