@@ -212,10 +212,10 @@ def mail(subject, msg):
 #	server.set_debuglevel(1)
 	for email in cf.mailto.split():
 		msg = 'To: %s\n' % email + \
-			'Subject: %s\n\n' % subject + \
-			'Current time:\n' + os.popen('date').read() + \
-			'System information:\n'+ os.popen('uname -a').read() + \
-			'Uptime:\n' + os.popen('uptime').read() + \
+			'Subject: %s\n\n' % subject + '\n' + \
+			'Current time:\n' + os.popen('date').read() + '\n' + \
+			'System information:\n'+ os.popen('uname -a').read() + '\n' + \
+			'Uptime:\n' + os.popen('uptime').read() + '\n' + \
 			'Currently logged on users:\n' + os.popen('who').read() + '\n' + \
 			subject + '\n\n' + msg
 		smtp.sendmail('dconf@%s' % os.uname()[1], email, msg)
