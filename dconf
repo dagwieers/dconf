@@ -60,12 +60,12 @@ class Options:
 		print 'python %s' % sys.version
 
 	def usage(self):
-		print 'usage: dconf [-q] [-v] [-c config]'
+		print 'usage: dconf [-q] [-v] [-c config] [-o output]'
 
 	def help(self):
-		print '''Set up a distribution server from ISO files
+		print '''Collect a system's hardware and software configuration
 
-Yam options:
+Dconf options:
   -c, --config=file     specify alternative configfile
   -o, --output=file		write output to given file
   -q, --quiet           minimal output
@@ -225,7 +225,7 @@ def mail(subject, msg):
 	smtp.quit()
 
 def main():
-	umask(077)
+	os.umask(077)
 
 	### Add to cron
 	if cf.cron and not op.output:

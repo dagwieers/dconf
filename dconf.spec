@@ -2,7 +2,7 @@
 # Authority: dag
 # Upstream: Dag Wieers <dag@wieers.com>
 
-Summary: Collect system HW and SW configuration and manage changes
+Summary: Collect a system's hardware and software configuration
 Name: dconf
 Version: 0.3
 Release: 1
@@ -20,12 +20,17 @@ Requires: python
 
 %description
 Dconf is a tool to collect a system's hardware and software configuration.
-It allows to take your system configuration with you or compare systems
-(like nodes in a cluster) to troubleshoot HW or SW problems.
+It allows to take your system configuration with you on the road, compare
+identical systems (like nodes in a cluster) to troubleshoot HW or SW
+problems.
 
 Dconf is also useful in projects where you have to manage changes as a
-team. Dconf can send out changes to your systems to a list of email
-addresses so that they can be revised.
+team. Dconf can send out system changes to a list of email addresses so
+that they can be revised and discussed in group.
+
+You can customize your dconf configuration for specific needs, like making
+a profile of your laptop's hardware or copy specific software configuration
+files to send out or compare with other systems.
 
 %prep
 %setup
@@ -41,7 +46,7 @@ addresses so that they can be revised.
 
 %files
 %defattr(-, root, root, 0755)
-%doc AUTHORS ChangeLog COPYING README THANKS TODO
+%doc AUTHORS ChangeLog COPYING README TODO *.conf
 %config(noreplace) %{_sysconfdir}/dconf.conf
 %config(noreplace) %{_sysconfdir}/dconf-custom.conf
 %{_bindir}/dconf
