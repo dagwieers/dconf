@@ -1,6 +1,7 @@
 * 0.4
 - Fixed a problem with unowned files. (Alain Rykaert)
 - Added cups, ltsp, nscd and smbldap config. (Alain Rykaert)
+- Added rpmdb filter to filter out unchanged config-files.
 
 * 0.3
 - Added lots of extra sections (more additions welcome !)

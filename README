@@ -10,3 +10,12 @@ that they can be revised and discussed in group.
 You can customize your dconf configuration for specific needs, like making
 a profile of your laptop's hardware or copy specific software configuration
 files to send out or compare with other systems.
+
+As a sysadmin, you won't become too paranoid if less experienced people
+have root-access.
+
+As a consultant, you won't feel isolated if you don't have remote access
+to your systems.
+
+As a support engineer, you won't become frustrated if a customer has
+fiddled around with some important config file and you have to find what.

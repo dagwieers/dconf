@@ -1,8 +1,8 @@
-#!/usr/bin/python2
+#!/usr/bin/env python
 
 import os, sys, glob, re, shutil, getopt, popen2, time
 import ConfigParser, urlparse, pwd, grp, stat, socket
-import difflib, smtplib, gzip
+import difflib, smtplib, gzip, rpm, md5
 
 VERSION = "0.4"
 
@@ -134,6 +134,29 @@ class Config:
 			pass
 		return var
 
+def md5sum(filename):
+	md5o = md5.new(); f = open(filename, 'r'); md5o.update(f.read()); f.close()
+	return md5o
+
+def md5check(h, filename):
+	"Check if md5sum is the same as in rpmdb"
+	for file in h.fiFromHeader():
+		if file[0] == filename:
+			if os.path.exists(filename):
+				if md5sum(filename).hexdigest() == file[12]:
+					return True
+		return False
+	return False
+
+def fromrpmdb(filename):
+	"Check if file is inside rpmdb"
+	mi = ts.dbMatch('basenames', filename)
+	for h in mi:
+		return h
+	else:
+		info(4, "File %s not in rpmdb" % filename)
+		return None
+	
 def info(level, str):
 	"Output info message"
 	if level <= op.verbose:
@@ -208,21 +231,28 @@ def diff(fromfile, tofile):
 
 def mail(subject, msg):
 	info(2, 'Sending mail to: %s' % cf.mailto)
-	smtp = smtplib.SMTP(cf.smtpserver)
-#	server.set_debuglevel(1)
-	for email in cf.mailto.split():
-		msg = 'To: %s\n' % email + \
-			'Subject: %s\n\n' % subject + '\n' + \
-			'Current time:\n' + os.popen('date').read() + '\n' + \
-			'System information:\n'+ os.popen('uname -a').read() + '\n' + \
-			'Uptime:\n' + os.popen('uptime').read() + '\n' + \
-			'Currently logged on users:\n' + os.popen('who').read() + '\n' + \
-			subject + '\n\n' + msg
-		smtp.sendmail('dconf@%s' % os.uname()[1], email, msg)
-	smtp.quit()
+	try:
+		smtp = smtplib.SMTP(cf.smtpserver)
+#		server.set_debuglevel(1)
+		for email in cf.mailto.split():
+			msg = 'To: %s\n' % email + \
+				'Subject: %s\n\n' % subject + '\n' + \
+				'Current time:\n' + os.popen('date').read() + '\n' + \
+				'System information:\n'+ os.popen('uname -a').read() + '\n' + \
+				'Uptime:\n' + os.popen('uptime').read() + '\n' + \
+				'Currently logged on users:\n' + os.popen('who').read() + '\n' + \
+				subject + '\n\n' + msg
+			smtp.sendmail('dconf@%s' % os.uname()[1], email, msg)
+		smtp.quit()
+	except:
+		info(1, 'Sending mail via %s failed.' % cf.smtpserver)
 
 def main():
-	global extension, hostname, timestamp
+	global extension, hostname, timestamp, ts
+
+	if cf.rpm:
+		ts = rpm.ts()
+		ts.setVSFlags(rpm.RPMVSF_NORSA | rpm.RPMVSF_NODSA)
 
 	extension = ''
 	if cf.compression == 'bzip2':
@@ -286,69 +316,67 @@ def main():
 		if cf.sections[section].has_key('cmds'):
 			for line in cf.sections[section]['cmds']:
 				clist = line.split()
-				if clist:
-					cmd = clist[0].strip()
-					cmd = which(cmd)
-					extra = ' '.join(clist[1:])
-					if cmd:
-						(mode, t, t, t, uid, gid, size, t, t, t) = os.stat(cmd)
-						info(4, 'Processing cmd %s' % cmd)
-						try: owner = pwd.getpwuid(uid)
-						except: owner = (uid,)
-						try: group = grp.getgrgid(gid)
-						except: group = (gid,)
-						if not stitle:
-							info(3, 'Processing section [%s]' % section)
-							stitle = '== ' + section.upper() + ' =='
-							log.write(stitle + '=' * (80 - len(stitle)) + '\n')
-						title = '--[ Cmd: %s %s ]--(%04o, %s, %s, %s)--' % (cmd, extra, stat.S_IMODE(mode), owner[0], group[0], size)
-						log.write(title + '-' * (80 - len(title)) + '\n')
-						(o, i) = popen2.popen4('%s %s' % (cmd, extra))
-						log.write(o.read())
-						log.write('\n')
+				if not clist: continue
+
+				cmd = clist[0].strip()
+				cmd = which(cmd)
+				extra = ' '.join(clist[1:])
+				if not cmd: continue
+
+				(mode, t, t, t, uid, gid, size, t, t, t) = os.stat(cmd)
+				info(4, 'Processing cmd %s' % cmd)
+				try: owner = pwd.getpwuid(uid)
+				except: owner = (uid,)
+				try: group = grp.getgrgid(gid)
+				except: group = (gid,)
+				if not stitle:
+					info(3, 'Processing section [%s]' % section)
+					stitle = '== ' + section.upper() + ' =='
+					log.write(stitle + '=' * (80 - len(stitle)) + '\n')
+				title = '--[ Cmd: %s %s ]--(%04o, %s, %s, %s)--' % (cmd, extra, stat.S_IMODE(mode), owner[0], group[0], size)
+				log.write(title + '-' * (80 - len(title)) + '\n')
+				(o, i) = popen2.popen4('%s %s' % (cmd, extra))
+				log.write(o.read())
+				log.write('\n')
 
 		if cf.sections[section].has_key('files'):
 			for line in cf.sections[section]['files']:
 				flist = line.split('|')
-				if flist:
-					extra = '|'.join(flist[1:])
-					if extra: extra = extra + ' '
-					for file in glob.glob(flist[0].strip()):
-						if file and os.path.isfile(file):
-							(mode, t, t, t, uid, gid, size, t, t, t) = os.stat(file)
-							if not size: continue
-#							if cf.rpm:
-#								if not os.system('rpm --quiet --nodigest --nosignature -qf %s' % file):
-#									if os.system('rpm --nodigest --nosignature -Vf %s | grep -q -E "^(S..|.M.|..5)..... c %s\$"' % (file, file)):
-#										info(4, 'File %s has not been changed since installation.' % file)
-#										continue
-#									else:
-#										info(1, 'YES!!! File %s _has_ been changed since installation.' % file)
-							info(4, 'Processing file %s' % file)
-							try: owner = pwd.getpwuid(uid)
-							except: owner = (uid,)
-							try: group = grp.getgrgid(gid)
-							except: group = (gid,)
-							if not stitle:
-								info(3, 'Processing section [%s]' % section)
-								stitle = '== ' + section.upper() + ' =='
-								log.write(stitle + '=' * (80 - len(stitle)) + '\n')
-							title = '--[ File: %s %s]--(%04o, %s, %s, %s)--' % (file, extra, stat.S_IMODE(mode), owner[0], group[0], size)
-							log.write(title + '-' * (80 - len(title)) + '\n')
-							(o, i) = popen2.popen4('cat %s %s' % (file, extra))
-							log.write(o.read())
-							log.write('\n')
+				if not flist: continue
+				extra = '|'.join(flist[1:])
+				if extra: extra = extra + ' '
+				for file in glob.glob(flist[0].strip()):
+					if not file or not os.path.isfile(file): continue
+					(mode, t, t, t, uid, gid, size, t, t, t) = os.stat(file)
+					if not size: continue
+
+					if cf.rpm:
+						h = fromrpmdb(file)
+						if h and md5check(h, file):
+							info(4, 'File %s has not been changed since installation.' % file)
+							continue
+
+					info(4, 'Processing file %s' % file)
+					try: owner = pwd.getpwuid(uid)
+					except: owner = (uid,)
+					try: group = grp.getgrgid(gid)
+					except: group = (gid,)
+					if not stitle:
+						info(3, 'Processing section [%s]' % section)
+						stitle = '== ' + section.upper() + ' =='
+						log.write(stitle + '=' * (80 - len(stitle)) + '\n')
+					title = '--[ File: %s %s]--(%04o, %s, %s, %s)--' % (file, extra, stat.S_IMODE(mode), owner[0], group[0], size)
+					log.write(title + '-' * (80 - len(title)) + '\n')
+					(o, i) = popen2.popen4('cat %s %s' % (file, extra))
+					log.write(o.read())
+					log.write('\n')
 	log.close()
 
 	if op.output:
 		return
 
 	if os.path.isfile(latestlog):
-		import md5
-		md5old = md5.new(); file = open(latestlog, 'r'); md5old.update(file.read()); file.close()
-		md5new = md5.new(); file = open(logfile, 'r'); md5new.update(file.read()); file.close()
-
-		if md5old.digest() != md5new.digest():
+		if md5sum(latestlog).digest() != md5sum(logfile).digest():
 			info(2, 'New logfile is different than last logfile, keeping.')
 			symlink(os.path.realpath(latestlog), previouslog)
 			symlink(logfile, latestlog)
@@ -394,5 +422,8 @@ if __name__ == '__main__':
 #		print e.errno
 		cleanup()
 		die(7, 'OSError: %s' % e)
+	except IOError, e:
+		cleanup()
+		die(8, 'IOError: %s' % e)
 
 # vim:ts=4:sw=4

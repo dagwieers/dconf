@@ -1,8 +1,7 @@
 ### Usability
-+ Check against RPM database (if inside and not changed, leave it out)
 + Make mailing diffs smart (keep the headers and diff content)
 + Add support for (recursive) dirs
-+ Currently dconf fails if email is specified but mailserver is not working
++ Rotate snapshots or consolidate snapshots (by removing in-between snapshots)
 
 ### Output
 + Sort the different sections
@@ -12,3 +11,6 @@
 + Add tool to smart diff between 2 dates (say: dconf-diff '1 day ago')
 + Add tool to restore files from dconf log
 + Get logged-on people directly from utmp database (based on given dates)
+
+### Bugs
++ Dconf needs a very recent python with unified_diff support
