@@ -2,6 +2,7 @@
 + Check against RPM database (if inside and not changed, leave it out)
 + Make mailing diffs smart (keep the headers and diff content)
 + Add support for (recursive) dirs
++ Currently dconf fails if email is specified but mailserver is not working
 
 ### Output
 + Sort the different sections

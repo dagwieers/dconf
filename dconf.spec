@@ -4,7 +4,7 @@
 
 Summary: Collect a system's hardware and software configuration
 Name: dconf
-Version: 0.3
+Version: 0.4
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -16,6 +16,7 @@ Vendor: Dag Apt Repository, http://dag.wieers.com/apt/
 Source: http://dag.wieers.com/home-made/dconf/dconf-%{version}.tar.bz2
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
+BuildArch: noarch
 Requires: python
 
 %description
@@ -52,5 +53,8 @@ files to send out or compare with other systems.
 %{_bindir}/dconf
 
 %changelog
+* Sun Nov 07 2004 Dag Wieers <dag@wieers.com> - 0.4-1
+- Updated to release 0.4.
+
 * Sun Oct 24 2004 Dag Wieers <dag@wieers.com> - 0.3-1
 - Updated to release 0.3.

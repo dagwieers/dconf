@@ -1,3 +1,7 @@
+* 0.4
+- Fixed a problem with unowned files. (Alain Rykaert)
+- Added cups, ltsp, nscd and smbldap config. (Alain Rykaert)
+
 * 0.3
 - Added lots of extra sections (more additions welcome !)
 - Filtered out iptables and netstat counters

@@ -1,10 +1,10 @@
 #!/usr/bin/python2
 
 import os, sys, glob, re, shutil, getopt, popen2, time
-import ConfigParser, urlparse, pwd, grp, stat
+import ConfigParser, urlparse, pwd, grp, stat, socket
 import difflib, smtplib, gzip
 
-VERSION = "0.3"
+VERSION = "0.4"
 
 enable = ('yes', 'on', 'true', '1')
 disable = ('no', 'off', 'false', '0')
@@ -222,6 +222,20 @@ def mail(subject, msg):
 	smtp.quit()
 
 def main():
+	global extension, hostname, timestamp
+
+	extension = ''
+	if cf.compression == 'bzip2':
+		from bz2 import BZ2File as open
+		extension = '.bz2'
+	elif cf.compression == 'gzip':
+		from gzip import open
+		extension = '.gz'
+
+#	hostname = os.uname()[1].split('.')[0]
+	hostname = socket.gethostbyaddr(socket.gethostname())[0]
+	timestamp = time.strftime('%Y%m%d-%H%M%S', time.localtime()) 
+
 	os.umask(077)
 
 	### Add to cron
@@ -280,9 +294,9 @@ def main():
 						(mode, t, t, t, uid, gid, size, t, t, t) = os.stat(cmd)
 						info(4, 'Processing cmd %s' % cmd)
 						try: owner = pwd.getpwuid(uid)
-						except: owner = (uid)
+						except: owner = (uid,)
 						try: group = grp.getgrgid(gid)
-						except: group = (gid)
+						except: group = (gid,)
 						if not stitle:
 							info(3, 'Processing section [%s]' % section)
 							stitle = '== ' + section.upper() + ' =='
@@ -312,9 +326,9 @@ def main():
 #										info(1, 'YES!!! File %s _has_ been changed since installation.' % file)
 							info(4, 'Processing file %s' % file)
 							try: owner = pwd.getpwuid(uid)
-							except: owner = (uid)
+							except: owner = (uid,)
 							try: group = grp.getgrgid(gid)
-							except: group = (gid)
+							except: group = (gid,)
 							if not stitle:
 								info(3, 'Processing section [%s]' % section)
 								stitle = '== ' + section.upper() + ' =='
@@ -370,17 +384,6 @@ if __name__ == '__main__':
 			cf.includefile(cfgfile)
 		else:
 			info(3, 'Configfile %s does not exist, ignoring.')
-
-	extension = ''
-	if cf.compression == 'bzip2':
-		from bz2 import BZ2File as open
-		extension = '.bz2'
-	elif cf.compression == 'gzip':
-		from gzip import open
-		extension = '.gz'
-
-	hostname = os.uname()[1].split('.')[0]
-	timestamp = time.strftime('%Y%m%d-%H%M%S', time.localtime()) 
 
 	try:
 		main()
