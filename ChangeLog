@@ -1,0 +1,14 @@
+* 0.3
+- Added lots of extra sections (more additions welcome !)
+- Filtered out iptables and netstat counters
+- Implemented mail feature (when differences or when initial use)
+- Implemented inline diff function
+- Allow to write to different output file or stdout
+- Add config option to add to cron (hourly, daily, weekly or monthly)
+- Add config option to include custom configfiles (eg. /etc/dconf-custom.conf)
+- Added gzip support
+- Added cleanup hook to remove unfinished logfiles when interrupted
+- Initial public release
+
+* 0.2
+- Basic version with mailing support

@@ -1,0 +1,13 @@
+### Usability
++ Check against RPM database (if inside and not changed, leave it out)
++ Make mailing diffs smart (keep the headers and diff content)
++ Add support for (recursive) dirs
+
+### Output
++ Sort the different sections
++ Allow XML or HTML output (in some way)
++ Make gzip output optional and allow for no compression or bz2 compression
+
+### Query tool (dconf-diff)
++ Added tool to smart diff between 2 dates (say: dconf-diff '1 day ago')
++ Get people logged on directly from utmp database (based on given dates)
