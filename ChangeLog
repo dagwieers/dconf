@@ -1,7 +1,13 @@
+* 0.4.1
+- Fixed a bug with md5sum checking
+- Use compression based on the filename extension
+- Split Red Hat and SuSE config files
+
 * 0.4
-- Fixed a problem with unowned files. (Alain Rykaert)
-- Added cups, ltsp, nscd and smbldap config. (Alain Rykaert)
-- Added rpmdb filter to filter out unchanged config-files.
+- Fixed a problem with unowned files (Alain Rykaert)
+- Added cups, ltsp, nscd and smbldap config (Alain Rykaert)
+- Added rpmdb support to filter out unchanged config-files
+- Now cleanly accept of mails can't be send
 
 * 0.3
 - Added lots of extra sections (more additions welcome !)

@@ -1,7 +1,12 @@
+### Configuration
++ Add as many config files and important system state info
++ Split Conectiva/Debian/Mandrake/Red Hat/SuSE config files
+
 ### Usability
 + Make mailing diffs smart (keep the headers and diff content)
 + Add support for (recursive) dirs
 + Rotate snapshots or consolidate snapshots (by removing in-between snapshots)
++ Add dpkg support
 
 ### Output
 + Sort the different sections
@@ -14,3 +19,5 @@
 
 ### Bugs
 + Dconf needs a very recent python with unified_diff support
++ Dconf should not fail if RPM is missing
++ Dconf should not try and cat files it has not permission to read

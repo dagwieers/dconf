@@ -4,7 +4,7 @@ import os, sys, glob, re, shutil, getopt, popen2, time
 import ConfigParser, urlparse, pwd, grp, stat, socket
 import difflib, smtplib, gzip, rpm, md5
 
-VERSION = "0.4"
+VERSION = '0.4.1'
 
 enable = ('yes', 'on', 'true', '1')
 disable = ('no', 'off', 'false', '0')
@@ -134,8 +134,18 @@ class Config:
 			pass
 		return var
 
+def dopen(filename, arg='r'):
+	"Opens a file using compression based on file's extension"
+	if re.compile('^.+\.gz$').match(filename):
+		return gzip.open(filename, arg)
+	elif re.compile('^.+\.bz2$').match(filename):
+		return BZ2File.open(filename, arg)
+	else:
+		return open(filename, arg)
+
 def md5sum(filename):
-	md5o = md5.new(); f = open(filename, 'r'); md5o.update(f.read()); f.close()
+	"Return md5 from file"
+	md5o = md5.new(); f = dopen(filename); md5o.update(f.read()); f.close()
 	return md5o
 
 def md5check(h, filename):
@@ -218,11 +228,10 @@ def which(cmd):
 	return ''
 
 def diff(fromfile, tofile):
+	"Create a unified diff from 2 files"
 	msg = ''
-#	fromfd = file(fromfile)
-#	tofd = file(tofile)
-	fromfd = open(fromfile)
-	tofd = open(tofile)
+	fromfd = dopen(fromfile)
+	tofd = dopen(tofile)
 	for line in difflib.unified_diff(fromfd.readlines(), tofd.readlines(), fromfile, tofile, os.stat(fromfile).st_mtime, os.stat(tofile).st_mtime):
 		msg = msg + line
 	tofd.close()
@@ -254,13 +263,12 @@ def main():
 		ts = rpm.ts()
 		ts.setVSFlags(rpm.RPMVSF_NORSA | rpm.RPMVSF_NODSA)
 
-	extension = ''
-	if cf.compression == 'bzip2':
-		from bz2 import BZ2File as open
-		extension = '.bz2'
-	elif cf.compression == 'gzip':
-		from gzip import open
+	if cf.compression == 'gzip':
 		extension = '.gz'
+	elif cf.compression == 'bzip2':
+		extension = '.bz2'
+	else:
+		extension = ''
 
 #	hostname = os.uname()[1].split('.')[0]
 	hostname = socket.gethostbyaddr(socket.gethostname())[0]
@@ -297,20 +305,19 @@ def main():
 	else:
 		if op.output:
 			logfile = op.output
-   			log = open(logfile, 'w')
+   			log = dopen(logfile, 'w')
 		else:
 			logfile = os.path.join(cf.logdir, 'dconf-' + hostname + '-' + timestamp + '.log' + extension)
 			mkdir(cf.logdir)
 			os.chmod(cf.logdir, 0700)
-#  			log = open(logfile, 'w')
-			log = open(logfile, 'w')
+			log = dopen(logfile, 'w')
 			latestlog = os.path.join(cf.logdir, 'dconf-' + hostname + '-latest.log' + extension)
 			previouslog = os.path.join(cf.logdir, 'dconf-' + hostname + '-previous.log' + extension)
 			oldestlog = os.path.join(cf.logdir, 'dconf-' + hostname + '-oldest.log' + extension)
 
 
 	info(2, 'Building file: %s' % logfile)
-	for section in cf.sections:
+	for section in cf.sections.keys():
 		stitle = None
 
 		if cf.sections[section].has_key('cmds'):
@@ -391,7 +398,7 @@ def main():
 		symlink(logfile, previouslog)
 		symlink(logfile, latestlog)
 		if cf.mailto:
-			mail('initial config for %s' % os.uname()[1], open(logfile, 'r').read())
+			mail('initial config for %s' % os.uname()[1], dopen(logfile, 'r').read())
 
 ### Workaround for python <= 2.2.1
 try:
