@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
 import os, sys, glob, re, shutil, getopt, popen2, time
-import ConfigParser, urlparse, pwd, grp, stat, socket
-import difflib, smtplib, gzip, rpm, md5
+import ConfigParser, urlparse, pwd, grp, stat
+import difflib, smtplib, gzip, md5, sha
 
-VERSION = '0.4.1'
+VERSION = '0.4.2'
 
 enable = ('yes', 'on', 'true', '1')
 disable = ('no', 'off', 'false', '0')
@@ -15,11 +15,12 @@ class Options:
 		self.dist = None
 		self.output = None
 		self.quiet = False
+		self.root = ''
 		self.verbose = 1
 
 		try:
-			opts, args = getopt.getopt (args, 'c:ho:qv',
-				['config=', 'help', 'output=', 'quiet', 'verbose', 'version'])
+			opts, args = getopt.getopt (args, 'c:ho:qr:v',
+				['config=', 'help', 'output=', 'quiet', 'root=', 'verbose', 'version'])
 		except getopt.error, exc:
 			print 'dconf: %s, try dconf -h for a list of all the options' % str(exc)
 			sys.exit(1)
@@ -35,6 +36,8 @@ class Options:
 				self.output=arg
 			elif opt in ['-q', '--quiet']:
 				self.quiet = True
+			elif opt in ['-r', '--root']:
+				self.root = arg
 			elif opt in ['-v', '--verbose']:
 				self.verbose = self.verbose + 1
 			elif opt in ['--version']:
@@ -56,17 +59,18 @@ class Options:
 		print 'python %s' % sys.version
 
 	def usage(self):
-		print 'usage: dconf [-q] [-v] [-c config] [-o output]'
+		print 'usage: dconf [-q] [-v] [-c config] [-o output] [-r root]'
 
 	def help(self):
-		print '''Collect a system's hardware and software configuration
+		print '''Create a system's hardware and software configuration snapshot
 
 Dconf options:
-  -c, --config=file     specify alternative configfile
-  -o, --output=file		write output to given file
-  -q, --quiet           minimal output
-  -v, --verbose         increase verbosity
-  -vv, -vvv             increase verbosity more
+  -c, --config=file    specify alternative configfile
+  -o, --output=file    write output to given file
+  -q, --quiet          minimal output
+  -r, --root=root      work on a different root directory
+  -v, --verbose        increase verbosity
+  -vv, -vvv            increase verbosity more
 '''
 
 class Config:
@@ -109,7 +113,6 @@ class Config:
 		if op.verbose == 1 and self.quiet:
 			op.verbose = 0
 
-
 		sections = self.cfg.sections()
 		sections.sort()
 		for section in sections:
@@ -134,7 +137,7 @@ class Config:
 			pass
 		return var
 
-def dopen(filename, arg='r'):
+def dzopen(filename, arg='r'):
 	"Opens a file using compression based on file's extension"
 	if re.compile('^.+\.gz$').match(filename):
 		return gzip.open(filename, arg)
@@ -145,7 +148,7 @@ def dopen(filename, arg='r'):
 
 def md5sum(filename):
 	"Return md5 from file"
-	md5o = md5.new(); f = dopen(filename); md5o.update(f.read()); f.close()
+	md5o = md5.new(); f = dzopen(filename); md5o.update(f.read()); f.close()
 	return md5o
 
 def md5check(h, filename):
@@ -158,13 +161,29 @@ def md5check(h, filename):
 		return False
 	return False
 
+def sha1sum(filename):
+	"Return sha1 from file"
+	sha1o = sha.new(); f = dzopen(filename); sha1o.update(f.read()); f.close()
+	return sha1o
+
+def sha1check(h, filename):
+	"Check if sha1sum is the same as in rpmdb"
+	for file in h.fiFromHeader():
+		if file[0] == filename:
+			if os.path.exists(filename):
+				if sha1sum(filename).hexdigest() == file[12]:
+					return True
+		return False
+	return False
+
 def fromrpmdb(filename):
 	"Check if file is inside rpmdb"
+	if not ts: return None
 	mi = ts.dbMatch('basenames', filename)
 	for h in mi:
 		return h
 	else:
-		info(4, "File %s not in rpmdb" % filename)
+		info(4, 'File %s not in rpmdb, including' % filename)
 		return None
 	
 def info(level, str):
@@ -225,13 +244,13 @@ def which(cmd):
 		if os.path.isfile(os.path.join(path, cmd)):
 			info(4, 'Found command %s in path %s' % (cmd, path))
 			return os.path.join(path, cmd)
-	return ''
+	return None
 
 def diff(fromfile, tofile):
 	"Create a unified diff from 2 files"
 	msg = ''
-	fromfd = dopen(fromfile)
-	tofd = dopen(tofile)
+	fromfd = dzopen(fromfile)
+	tofd = dzopen(tofile)
 	for line in difflib.unified_diff(fromfd.readlines(), tofd.readlines(), fromfile, tofile, os.stat(fromfile).st_mtime, os.stat(tofile).st_mtime):
 		msg = msg + line
 	tofd.close()
@@ -259,9 +278,14 @@ def mail(subject, msg):
 def main():
 	global extension, hostname, timestamp, ts
 
-	if cf.rpm:
+	if cf.rpm and which('rpm'):
+		import rpm
 		ts = rpm.ts()
 		ts.setVSFlags(rpm.RPMVSF_NORSA | rpm.RPMVSF_NODSA)
+	else:
+		info(2, 'Disabling RPM capability since the rpm binary could not be located.')
+		cf.rpm = False
+		ts = None
 
 	if cf.compression == 'gzip':
 		extension = '.gz'
@@ -270,8 +294,8 @@ def main():
 	else:
 		extension = ''
 
-#	hostname = os.uname()[1].split('.')[0]
-	hostname = socket.gethostbyaddr(socket.gethostname())[0]
+	hostname = os.uname()[1].split('.')[0]
+#	hostname = socket.gethostbyaddr(socket.gethostname())[0]
 	timestamp = time.strftime('%Y%m%d-%H%M%S', time.localtime()) 
 
 	os.umask(077)
@@ -289,13 +313,13 @@ def main():
 		else:
 			info(2, 'Option cron should be set to hourly, daily, weekly or monthly.')
 
-	### Remove from cron
-	for item in ('hourly', 'daily', 'weekly', 'monthly'):
-		if item != cf.cron:
-			cronfile = os.path.join('/etc', 'cron.%s' % item, 'dconf')
-			if os.path.isfile(cronfile):
-				info(2, 'Removing dconf from cron (%s).' % item)
-				remove(cronfile)
+		### Remove from cron
+		for item in ('hourly', 'daily', 'weekly', 'monthly'):
+			if item != cf.cron:
+				cronfile = os.path.join('/etc', 'cron.%s' % item, 'dconf')
+				if os.path.isfile(cronfile):
+					info(2, 'Removing dconf from cron (%s).' % item)
+					remove(cronfile)
 
 	if op.output == '-':
 		logfile = '- (stdout)'
@@ -305,12 +329,12 @@ def main():
 	else:
 		if op.output:
 			logfile = op.output
-   			log = dopen(logfile, 'w')
+   			log = dzopen(logfile, 'w')
 		else:
 			logfile = os.path.join(cf.logdir, 'dconf-' + hostname + '-' + timestamp + '.log' + extension)
 			mkdir(cf.logdir)
 			os.chmod(cf.logdir, 0700)
-			log = dopen(logfile, 'w')
+			log = dzopen(logfile, 'w')
 			latestlog = os.path.join(cf.logdir, 'dconf-' + hostname + '-latest.log' + extension)
 			previouslog = os.path.join(cf.logdir, 'dconf-' + hostname + '-previous.log' + extension)
 			oldestlog = os.path.join(cf.logdir, 'dconf-' + hostname + '-oldest.log' + extension)
@@ -325,21 +349,25 @@ def main():
 				clist = line.split()
 				if not clist: continue
 
-				cmd = clist[0].strip()
+				cmd = os.path.join(op.root, clist[0].strip())
 				cmd = which(cmd)
 				extra = ' '.join(clist[1:])
 				if not cmd: continue
 
+				if not os.access(cmd, os.X_OK):
+					info(1, 'Cmd %s cannot be executed, excluding.' % cmd)
+					continue
+
 				(mode, t, t, t, uid, gid, size, t, t, t) = os.stat(cmd)
+				if not stitle:
+					info(3, 'Processing section [%s]' % section)
+					stitle = '== ' + section.upper() + ' =='
+					log.write(stitle + '=' * (80 - len(stitle)) + '\n')
 				info(4, 'Processing cmd %s' % cmd)
 				try: owner = pwd.getpwuid(uid)
 				except: owner = (uid,)
 				try: group = grp.getgrgid(gid)
 				except: group = (gid,)
-				if not stitle:
-					info(3, 'Processing section [%s]' % section)
-					stitle = '== ' + section.upper() + ' =='
-					log.write(stitle + '=' * (80 - len(stitle)) + '\n')
 				title = '--[ Cmd: %s %s ]--(%04o, %s, %s, %s)--' % (cmd, extra, stat.S_IMODE(mode), owner[0], group[0], size)
 				log.write(title + '-' * (80 - len(title)) + '\n')
 				(o, i) = popen2.popen4('%s %s' % (cmd, extra))
@@ -352,7 +380,7 @@ def main():
 				if not flist: continue
 				extra = '|'.join(flist[1:])
 				if extra: extra = extra + ' '
-				for file in glob.glob(flist[0].strip()):
+				for file in glob.glob(os.path.join(op.root, flist[0].strip())):
 					if not file or not os.path.isfile(file): continue
 					(mode, t, t, t, uid, gid, size, t, t, t) = os.stat(file)
 					if not size: continue
@@ -360,20 +388,26 @@ def main():
 					if cf.rpm:
 						h = fromrpmdb(file)
 						if h and md5check(h, file):
-							info(4, 'File %s has not been changed since installation.' % file)
+							info(4, 'File %s has not been changed since installation, excluding.' % file)
 							continue
 
 					info(4, 'Processing file %s' % file)
-					try: owner = pwd.getpwuid(uid)
-					except: owner = (uid,)
-					try: group = grp.getgrgid(gid)
-					except: group = (gid,)
+					if not os.access(file, os.R_OK):
+						info(1, 'File %s cannot be read, excluding.' % file)
+						continue
+
 					if not stitle:
 						info(3, 'Processing section [%s]' % section)
 						stitle = '== ' + section.upper() + ' =='
 						log.write(stitle + '=' * (80 - len(stitle)) + '\n')
+
+					try: owner = pwd.getpwuid(uid)
+					except: owner = (uid,)
+					try: group = grp.getgrgid(gid)
+					except: group = (gid,)
 					title = '--[ File: %s %s]--(%04o, %s, %s, %s)--' % (file, extra, stat.S_IMODE(mode), owner[0], group[0], size)
 					log.write(title + '-' * (80 - len(title)) + '\n')
+
 					(o, i) = popen2.popen4('cat %s %s' % (file, extra))
 					log.write(o.read())
 					log.write('\n')
@@ -383,10 +417,10 @@ def main():
 		return
 
 	if os.path.isfile(latestlog):
-		if md5sum(latestlog).digest() != md5sum(logfile).digest():
+		if sha1sum(latestlog).digest() != sha1sum(logfile).digest():
 			info(2, 'New logfile is different than last logfile, keeping.')
-			symlink(os.path.realpath(latestlog), previouslog)
-			symlink(logfile, latestlog)
+			symlink(os.path.basename(os.path.realpath(latestlog)), previouslog)
+			symlink(os.path.basename(logfile), latestlog)
 			if cf.mailto:
 				mail('changes to %s' % os.uname()[1], diff(os.path.realpath(previouslog), os.path.realpath(latestlog)))
 		else:
@@ -394,11 +428,11 @@ def main():
 			remove(logfile)
 	else:
 		info(2, 'Marking this as a first time run, symlinking.')
-		symlink(logfile, oldestlog)
-		symlink(logfile, previouslog)
-		symlink(logfile, latestlog)
+		symlink(os.path.basename(logfile), oldestlog)
+		symlink(os.path.basename(logfile), previouslog)
+		symlink(os.path.basename(logfile), latestlog)
 		if cf.mailto:
-			mail('initial config for %s' % os.uname()[1], dopen(logfile, 'r').read())
+			mail('initial config for %s' % os.uname()[1], dzopen(logfile, 'r').read())
 
 ### Workaround for python <= 2.2.1
 try:

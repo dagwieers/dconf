@@ -1,15 +1,22 @@
-* 0.4.1
+* 0.4.2 - Mid-Hudson Valley LUG - released 06/06/2005
+- Use 160bit SHA1 instead of 128bit MD5
+- Make relative links instead of absolute
+- Added --root option
+- Check permissions to files and commands prior to using them
+- Test existence of rpm binary prior to using it
+
+* 0.4.1 - released 24/11/2004
 - Fixed a bug with md5sum checking
 - Use compression based on the filename extension
 - Split Red Hat and SuSE config files
 
-* 0.4
+* 0.4 - released 21/11/2004
 - Fixed a problem with unowned files (Alain Rykaert)
 - Added cups, ltsp, nscd and smbldap config (Alain Rykaert)
 - Added rpmdb support to filter out unchanged config-files
 - Now cleanly accept of mails can't be send
 
-* 0.3
+* 0.3 - released 01/11/2004
 - Added lots of extra sections (more additions welcome !)
 - Filtered out iptables and netstat counters
 - Implemented mail feature (when differences or when initial use)

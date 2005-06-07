@@ -2,9 +2,9 @@
 # Authority: dag
 # Upstream: Dag Wieers <dag@wieers.com>
 
-Summary: Collect a system's hardware and software configuration
+Summary: Create a system's hardware and software configuration snapshot
 Name: dconf
-Version: 0.4.1
+Version: 0.4.2
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -17,7 +17,7 @@ Source: http://dag.wieers.com/home-made/dconf/dconf-%{version}.tar.bz2
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
 BuildArch: noarch
-Requires: python
+Requires: python >= 2.3
 
 %description
 Dconf is a tool to collect a system's hardware and software configuration.
@@ -43,19 +43,24 @@ files to send out or compare with other systems.
 %makeinstall
 
 ### Install configfile for this distribution
-%{__install} -D -m0644 dconf-redhat.conf %{buildroot}%{_sysconfdir}/dconf.conf
+%{__install} -Dp -m0644 config/dconf-redhat.conf %{buildroot}%{_sysconfdir}/dconf.conf
 
 %clean
 %{__rm} -rf %{buildroot}
 
 %files
 %defattr(-, root, root, 0755)
-%doc AUTHORS ChangeLog COPYING README THANKS TODO *.conf
+%doc AUTHORS ChangeLog COPYING README THANKS TODO config/
+%doc %{_mandir}/man1/dconf.1*
 %config %{_sysconfdir}/dconf.conf
 %config(noreplace) %{_sysconfdir}/dconf-custom.conf
 %{_bindir}/dconf
+%{_localstatedir}/log/dconf/
 
 %changelog
+* Mon Jun 06 2005 Dag Wieers <dag@wieers.com> - 0.4.2-1
+- Updated to release 0.4.2.
+
 * Wed Nov 24 2004 Dag Wieers <dag@wieers.com> - 0.4.1-1
 - Updated to release 0.4.1.
 

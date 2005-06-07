@@ -4,8 +4,8 @@ identical systems (like nodes in a cluster) to troubleshoot HW or SW
 problems.
 
 Dconf is also useful in projects where you have to manage changes as a
-team. Dconf can send out system changes to a list of email addresses so
-that they can be revised and discussed in group.
+team. Dconf can run periodically and send out system changes to a list
+of email addresses so that they can be revised and discussed in group.
 
 You can customize your dconf configuration for specific needs, like making
 a profile of your laptop's hardware or copy specific software configuration
@@ -18,4 +18,7 @@ As a consultant, you won't feel isolated if you don't have remote access
 to your systems.
 
 As a support engineer, you won't become frustrated if a customer has
-fiddled around with some important config file and you have to find what.
+fiddled around with some important config file and you have to find which.
+
+As a performance tuner, you can capture the state of the system
+configuration in between performance tests/benchmarks.
