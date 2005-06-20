@@ -1,22 +1,23 @@
 ### Configuration (help welcome !)
 + Add as many config files and important system state info
-+ Split Conectiva/Debian/Mandrake/Red Hat/SuSE config files
++ Add Mandriva/Gentoo/... config files
 
 ### Usability
 + Make mailing diffs smart (keep the headers and diff content)
-+ Add support for (recursive) dirs
++ Add support for (recursive) dirs (dirs = )
 + Rotate snapshots or consolidate snapshots (by removing in-between snapshots)
 + Add dpkg support
 + Use the same order in the snapshot file as the order of the sections
 
 ### Output
-+ Sort the different sections
 + Allow XML or HTML output (in some way)
 
 ### Query tool (dconf-diff)
 + Add tool to smart diff between 2 dates (say: dconf-diff '1 day ago' or dconf-diff 'now')
-+ Add tool to restore files from dconf log (say: dconf-restore --root /tmp /etc/sysctl.conf)
 + Get logged-on people directly from utmp database (based on given dates), see python-utmp
+
+### Restore tool (dconf-restore)
++ Add tool to restore files from dconf log (say: dconf-restore --root /tmp /etc/sysctl.conf)
 
 ### Bugs
 + Dconf needs a very recent python (2.3) with unified_diff support (for email-functionality only)

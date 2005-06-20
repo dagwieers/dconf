@@ -4,6 +4,11 @@
 - Added --root option
 - Check permissions to files and commands prior to using them
 - Test existence of rpm binary prior to using it
+- Added dconf-debian.conf (Leo Eraly)
+- Added --nodigest and --noverify to rpm -qa command
+- Added syslog message
+- Fixed sort differences when running using cron or manual (LC_ALL='C')
+- Added internal exclude list for common unwanted files
 
 * 0.4.1 - released 24/11/2004
 - Fixed a bug with md5sum checking

@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
-import os, sys, glob, re, shutil, getopt, popen2, time
-import ConfigParser, urlparse, pwd, grp, stat
+import os, sys, glob, re, shutil, getopt, popen2, time, fnmatch
+import ConfigParser, urlparse, pwd, grp, stat, syslog
 import difflib, smtplib, gzip, md5, sha
 
 VERSION = '0.4.2'
 
 enable = ('yes', 'on', 'true', '1')
 disable = ('no', 'off', 'false', '0')
+
+excludelist = 'CVS CVS.adm RCS RCSLOG SCCS TAGS cvslog.* tags .make.state .nse_depinfo *~ #* .#* ,* _$* *$ *.old *.bak *.BAK *.orig *.rej .del-* *.a *.olb *.o *.lo *.la *.obj *.so *.exe *.Z *.elc *.ln core core.[0-9]* .svn *.rpmorig *.rpmnew *.rpmsave .DS_Store'
 
 class Options:
 	def __init__(self, args):
@@ -105,6 +107,7 @@ class Config:
 		self.mailto = self.getoption('main', 'mailto', None)
 		self.smtpserver = self.getoption('main', 'smtp-server', 'localhost')
 		self.rpm = not self.getoption('main', 'rpm', 'no') in disable
+		self.exclude = self.getoption('main', 'exclude', excludelist).split()
 
 		if not op.output:
 			op.output = self.getoption('main', 'output', None)
@@ -139,9 +142,9 @@ class Config:
 
 def dzopen(filename, arg='r'):
 	"Opens a file using compression based on file's extension"
-	if re.compile('^.+\.gz$').match(filename):
+	if fnmatch.fnmatch(filename, '*.gz'):
 		return gzip.open(filename, arg)
-	elif re.compile('^.+\.bz2$').match(filename):
+	elif fnmatch.fnmatch(filename, '*.bz2'):
 		return BZ2File.open(filename, arg)
 	else:
 		return open(filename, arg)
@@ -183,9 +186,9 @@ def fromrpmdb(filename):
 	for h in mi:
 		return h
 	else:
-		info(4, 'File %s not in rpmdb, including' % filename)
+		info(5, 'File %s not in rpmdb, including' % filename)
 		return None
-	
+
 def info(level, str):
 	"Output info message"
 	if level <= op.verbose:
@@ -238,6 +241,22 @@ def mkdir(path):
 	if not os.path.exists(path):
 		os.makedirs(path)
 
+def getowner(uid, gid):
+	try:
+		owner = pwd.getpwuid(uid)[0]
+	except:
+		owner = uid
+	try:
+		group = grp.getgrgid(gid)[0]
+	except:
+		group = gid
+	return owner, group
+
+def sectiontitle(section):
+	info(3, 'Processing section [%s]' % section)
+	stitle = '== ' + section.upper() + ' =='
+	return stitle + '=' * (80 - len(stitle)) + '\n'
+
 def which(cmd):
 	"Find executables in PATH environment"
 	for path in os.environ.get('PATH','$PATH').split(':'):
@@ -257,20 +276,26 @@ def diff(fromfile, tofile):
 	fromfd.close()
 	return msg
 
+def fnmatches(file):
+	for entry in cf.exclude:
+		if fnmatch.fnmatch(file, entry):
+			info(6, 'File %s matches against glob %s' % (file, entry))
+			return True
+	return False
+
 def mail(subject, msg):
 	info(2, 'Sending mail to: %s' % cf.mailto)
 	try:
 		smtp = smtplib.SMTP(cf.smtpserver)
 #		server.set_debuglevel(1)
+		msg = 'Subject: %s\n\n' % subject + '\n' + \
+			'Current time:\n' + os.popen('date').read() + '\n' + \
+			'System information:\n'+ os.popen('uname -a').read() + '\n' + \
+			'Uptime:\n' + os.popen('uptime').read() + '\n' + \
+			'Currently logged on users:\n' + os.popen('who').read() + '\n' + \
+			subject + '\n\n' + msg
 		for email in cf.mailto.split():
-			msg = 'To: %s\n' % email + \
-				'Subject: %s\n\n' % subject + '\n' + \
-				'Current time:\n' + os.popen('date').read() + '\n' + \
-				'System information:\n'+ os.popen('uname -a').read() + '\n' + \
-				'Uptime:\n' + os.popen('uptime').read() + '\n' + \
-				'Currently logged on users:\n' + os.popen('who').read() + '\n' + \
-				subject + '\n\n' + msg
-			smtp.sendmail('dconf@%s' % os.uname()[1], email, msg)
+			smtp.sendmail('dconf@%s' % os.uname()[1], email, 'To: %s' + email + '\n' + msg)
 		smtp.quit()
 	except:
 		info(1, 'Sending mail via %s failed.' % cf.smtpserver)
@@ -288,17 +313,22 @@ def main():
 		ts = None
 
 	if cf.compression == 'gzip':
-		extension = '.gz'
+		extension = '.log.gz'
 	elif cf.compression == 'bzip2':
-		extension = '.bz2'
+		extension = '.log.bz2'
 	else:
-		extension = ''
+		extension = '.log'
 
 	hostname = os.uname()[1].split('.')[0]
 #	hostname = socket.gethostbyaddr(socket.gethostname())[0]
 	timestamp = time.strftime('%Y%m%d-%H%M%S', time.localtime()) 
 
 	os.umask(077)
+
+#	os.setenv('LC_ALL', 'C')
+	os.environ['LC_ALL'] = 'C'
+
+	syslog.syslog('Dconf started.')
 
 	### Add to cron
 	if cf.cron and not op.output:
@@ -326,53 +356,48 @@ def main():
 		log = sys.stdout
 		op.quiet = True
 		op.verbose = 0
+	elif op.output:
+		logfile = op.output
+   		log = dzopen(logfile, 'w')
 	else:
-		if op.output:
-			logfile = op.output
-   			log = dzopen(logfile, 'w')
-		else:
-			logfile = os.path.join(cf.logdir, 'dconf-' + hostname + '-' + timestamp + '.log' + extension)
-			mkdir(cf.logdir)
-			os.chmod(cf.logdir, 0700)
-			log = dzopen(logfile, 'w')
-			latestlog = os.path.join(cf.logdir, 'dconf-' + hostname + '-latest.log' + extension)
-			previouslog = os.path.join(cf.logdir, 'dconf-' + hostname + '-previous.log' + extension)
-			oldestlog = os.path.join(cf.logdir, 'dconf-' + hostname + '-oldest.log' + extension)
-
+		logfile = os.path.join(cf.logdir, 'dconf-' + hostname + '-' + timestamp + extension)
+		latestlog = os.path.join(cf.logdir, 'dconf-' + hostname + '-latest' + extension)
+		previouslog = os.path.join(cf.logdir, 'dconf-' + hostname + '-previous' + extension)
+		oldestlog = os.path.join(cf.logdir, 'dconf-' + hostname + '-oldest' + extension)
+		mkdir(cf.logdir)
+		os.chmod(cf.logdir, 0700)
+		log = dzopen(logfile, 'w')
 
 	info(2, 'Building file: %s' % logfile)
 	for section in cf.sections.keys():
-		stitle = None
+		stitle = False
 
 		if cf.sections[section].has_key('cmds'):
 			for line in cf.sections[section]['cmds']:
-				clist = line.split()
-				if not clist: continue
+				cmdline = line.split()
+				if not cmdline: continue
 
-				cmd = os.path.join(op.root, clist[0].strip())
-				cmd = which(cmd)
-				extra = ' '.join(clist[1:])
-				if not cmd: continue
+				cmd = which(os.path.join(op.root, cmdline[0].strip()))
+				extra = ' '.join(cmdline[1:])
+				if not cmd:
+					info(5, 'Cmd %s not found in PATH, excluding.' % cmdline[0].strip())
+					continue
 
 				if not os.access(cmd, os.X_OK):
 					info(1, 'Cmd %s cannot be executed, excluding.' % cmd)
 					continue
 
-				(mode, t, t, t, uid, gid, size, t, t, t) = os.stat(cmd)
 				if not stitle:
-					info(3, 'Processing section [%s]' % section)
-					stitle = '== ' + section.upper() + ' =='
-					log.write(stitle + '=' * (80 - len(stitle)) + '\n')
+					stitle = True
+					log.write(sectiontitle(section))
+
 				info(4, 'Processing cmd %s' % cmd)
-				try: owner = pwd.getpwuid(uid)
-				except: owner = (uid,)
-				try: group = grp.getgrgid(gid)
-				except: group = (gid,)
-				title = '--[ Cmd: %s %s ]--(%04o, %s, %s, %s)--' % (cmd, extra, stat.S_IMODE(mode), owner[0], group[0], size)
+				(mode, t, t, t, uid, gid, size, t, t, t) = os.stat(cmd)
+				owner, group = getowner(uid, gid)
+				title = '--[ Cmd: %s %s ]--(%04o, %s, %s, %s)--' % (cmd, extra, stat.S_IMODE(mode), owner, group, size)
 				log.write(title + '-' * (80 - len(title)) + '\n')
 				(o, i) = popen2.popen4('%s %s' % (cmd, extra))
-				log.write(o.read())
-				log.write('\n')
+				log.write(o.read() + '\n')
 
 		if cf.sections[section].has_key('files'):
 			for line in cf.sections[section]['files']:
@@ -382,36 +407,37 @@ def main():
 				if extra: extra = extra + ' '
 				for file in glob.glob(os.path.join(op.root, flist[0].strip())):
 					if not file or not os.path.isfile(file): continue
+
+					if fnmatches(file):
+						info(5, 'File %s is in the exclude list, excluding.' % file)
+						continue
+
 					(mode, t, t, t, uid, gid, size, t, t, t) = os.stat(file)
 					if not size: continue
 
 					if cf.rpm:
 						h = fromrpmdb(file)
 						if h and md5check(h, file):
-							info(4, 'File %s has not been changed since installation, excluding.' % file)
+							info(5, 'File %s has not been changed since installation, excluding.' % file)
 							continue
 
-					info(4, 'Processing file %s' % file)
 					if not os.access(file, os.R_OK):
 						info(1, 'File %s cannot be read, excluding.' % file)
 						continue
 
 					if not stitle:
-						info(3, 'Processing section [%s]' % section)
-						stitle = '== ' + section.upper() + ' =='
-						log.write(stitle + '=' * (80 - len(stitle)) + '\n')
+						stitle = True
+						log.write(sectiontitle(section))
 
-					try: owner = pwd.getpwuid(uid)
-					except: owner = (uid,)
-					try: group = grp.getgrgid(gid)
-					except: group = (gid,)
-					title = '--[ File: %s %s]--(%04o, %s, %s, %s)--' % (file, extra, stat.S_IMODE(mode), owner[0], group[0], size)
+					info(4, 'Processing file %s' % file)
+					owner, group = getowner(uid, gid)
+					title = '--[ File: %s %s]--(%04o, %s, %s, %s)--' % (file, extra, stat.S_IMODE(mode), owner, group, size)
 					log.write(title + '-' * (80 - len(title)) + '\n')
-
 					(o, i) = popen2.popen4('cat %s %s' % (file, extra))
-					log.write(o.read())
-					log.write('\n')
+					log.write(o.read() + '\n')
 	log.close()
+
+	syslog.syslog('Dconf ended succesfully.')
 
 	if op.output:
 		return
@@ -440,8 +466,6 @@ try:
 except NameError:
      True = 1
      False = 0
-Yes = yes = On = on = True
-No = no = Off = off = False
 
 ### Main entrance
 if __name__ == '__main__':
@@ -459,12 +483,8 @@ if __name__ == '__main__':
 	except KeyboardInterrupt, e:
 		cleanup()
 		die(6, 'Exiting on user request')
-	except OSError, e:
-#		print e.errno
+	except:
 		cleanup()
-		die(7, 'OSError: %s' % e)
-	except IOError, e:
-		cleanup()
-		die(8, 'IOError: %s' % e)
+		raise
 
 # vim:ts=4:sw=4
