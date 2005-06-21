@@ -1,0 +1,3 @@
+#!/bin/bash
+
+for sysv in /etc/init.d/*; do pkg="$(rpm -qf $sysv)"; echo "===$pkg==="; grep '/etc/sysconfig/' $sysv | grep -v '/etc/sysconfig/network'; echo; done
