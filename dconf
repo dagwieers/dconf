@@ -320,8 +320,8 @@ def main():
 	else:
 		extension = '.log'
 
-	hostname = os.uname()[1]
-#	hostname = os.uname()[1].split('.')[0]
+	hostname = os.uname()[1].split('.')[0]
+#	hostname = os.uname()[1]
 #	hostname = socket.gethostbyaddr(socket.gethostname())[0]
 	timestamp = time.strftime('%Y%m%d-%H%M%S', time.localtime()) 
 
