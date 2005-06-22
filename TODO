@@ -8,6 +8,7 @@
 + Rotate snapshots or consolidate snapshots (by removing in-between snapshots)
 + Add dpkg support
 + Use the same order in the snapshot file as the order of the sections
++ Dconf should also check time/owner/perms next to md5
 
 ### Output
 + Allow XML or HTML output (in some way)

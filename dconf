@@ -154,14 +154,14 @@ def md5sum(filename):
 	md5o = md5.new(); f = dzopen(filename); md5o.update(f.read()); f.close()
 	return md5o
 
+### FIXME: Also check timestamps/owner/perms
 def md5check(h, filename):
 	"Check if md5sum is the same as in rpmdb"
-	for file in h.fiFromHeader():
-		if file[0] == filename:
-			if os.path.exists(filename):
+	if os.path.exists(filename):
+		for file in h.fiFromHeader():
+			if file[0] == filename:
 				if md5sum(filename).hexdigest() == file[12]:
 					return True
-		return False
 	return False
 
 def sha1sum(filename):
@@ -171,12 +171,11 @@ def sha1sum(filename):
 
 def sha1check(h, filename):
 	"Check if sha1sum is the same as in rpmdb"
-	for file in h.fiFromHeader():
-		if file[0] == filename:
-			if os.path.exists(filename):
+	if os.path.exists(filename):
+		for file in h.fiFromHeader():
+			if file[0] == filename:
 				if sha1sum(filename).hexdigest() == file[12]:
 					return True
-		return False
 	return False
 
 def fromrpmdb(filename):
@@ -279,7 +278,7 @@ def diff(fromfile, tofile):
 def fnmatches(file):
 	for entry in cf.exclude:
 		if fnmatch.fnmatch(file, entry):
-			info(6, 'File %s matches against glob %s' % (file, entry))
+#			info(6, 'File %s matches against glob %s' % (file, entry))
 			return True
 	return False
 
@@ -288,7 +287,7 @@ def mail(subject, msg):
 	try:
 		smtp = smtplib.SMTP(cf.smtpserver)
 #		server.set_debuglevel(1)
-		msg = 'Subject: %s\n\n' % subject + '\n' + \
+		msg = 'Subject: [dconf] %s\n\n' % subject + '\n' + \
 			'Current time:\n' + os.popen('date').read() + '\n' + \
 			'System information:\n'+ os.popen('uname -a').read() + '\n' + \
 			'Uptime:\n' + os.popen('uptime').read() + '\n' + \
@@ -303,12 +302,14 @@ def mail(subject, msg):
 def main():
 	global extension, hostname, timestamp, ts
 
-	if cf.rpm and which('rpm'):
+#	if cf.rpm or which('rpm'):
+	try:
 		import rpm
 		ts = rpm.ts()
 		ts.setVSFlags(rpm.RPMVSF_NORSA | rpm.RPMVSF_NODSA)
-	else:
-		info(2, 'Disabling RPM capability since the rpm binary could not be located.')
+	except:
+#	else:
+		info(2, 'Disabling RPM capability since the rpm-python bindings could not be loaded.')
 		cf.rpm = False
 		ts = None
 
@@ -319,7 +320,8 @@ def main():
 	else:
 		extension = '.log'
 
-	hostname = os.uname()[1].split('.')[0]
+	hostname = os.uname()[1]
+#	hostname = os.uname()[1].split('.')[0]
 #	hostname = socket.gethostbyaddr(socket.gethostname())[0]
 	timestamp = time.strftime('%Y%m%d-%H%M%S', time.localtime()) 
 
@@ -415,7 +417,7 @@ def main():
 					(mode, t, t, t, uid, gid, size, t, t, t) = os.stat(file)
 					if not size: continue
 
-					if cf.rpm:
+					if ts:
 						h = fromrpmdb(file)
 						if h and md5check(h, file):
 							info(5, 'File %s has not been changed since installation, excluding.' % file)
