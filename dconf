@@ -4,7 +4,7 @@ import os, sys, glob, re, shutil, getopt, popen2, time, fnmatch
 import ConfigParser, urlparse, pwd, grp, stat, syslog
 import difflib, smtplib, gzip, md5, sha
 
-VERSION = '0.4.2'
+VERSION = '0.4.3'
 
 enable = ('yes', 'on', 'true', '1')
 disable = ('no', 'off', 'false', '0')
@@ -169,6 +169,7 @@ def sha1sum(filename):
 	sha1o = sha.new(); f = dzopen(filename); sha1o.update(f.read()); f.close()
 	return sha1o
 
+### BOGUS function, rpmdb only has md5 ?
 def sha1check(h, filename):
 	"Check if sha1sum is the same as in rpmdb"
 	if os.path.exists(filename):
@@ -305,8 +306,9 @@ def main():
 #	if cf.rpm or which('rpm'):
 	try:
 		import rpm
-		ts = rpm.ts()
-		ts.setVSFlags(rpm.RPMVSF_NORSA | rpm.RPMVSF_NODSA)
+		ts = rpm.TransactionSet()
+#		ts.setVSFlags(rpm.RPMVSF_NORSA | rpm.RPMVSF_NODSA)
+		ts.setVSFlags(rpm._RPMVSF_NOSIGNATURES | rpm._RPMVSF_NODIGESTS)
 	except:
 #	else:
 		info(2, 'Disabling RPM capability since the rpm-python bindings could not be loaded.')

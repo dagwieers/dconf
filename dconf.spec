@@ -4,7 +4,7 @@
 
 Summary: Create a system's hardware and software configuration snapshot
 Name: dconf
-Version: 0.4.2
+Version: 0.4.3
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -50,7 +50,7 @@ files to send out or compare with other systems.
 
 %files
 %defattr(-, root, root, 0755)
-%doc AUTHORS ChangeLog COPYING README THANKS TODO config/
+%doc AUTHORS ChangeLog COPYING README THANKS TODO config/ scripts/
 %doc %{_mandir}/man1/dconf.1*
 %config %{_sysconfdir}/dconf.conf
 %config(noreplace) %{_sysconfdir}/dconf-custom.conf
@@ -58,7 +58,10 @@ files to send out or compare with other systems.
 %{_localstatedir}/log/dconf/
 
 %changelog
-* Mon Jun 06 2005 Dag Wieers <dag@wieers.com> - 0.4.2-1
+* Wed Jun 21 2005 Dag Wieers <dag@wieers.com> - 0.4.3-1
+- Updated to release 0.4.3.
+
+* Wed Jun 22 2005 Dag Wieers <dag@wieers.com> - 0.4.2-1
 - Updated to release 0.4.2.
 
 * Wed Nov 24 2004 Dag Wieers <dag@wieers.com> - 0.4.1-1

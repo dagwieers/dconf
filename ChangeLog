@@ -1,4 +1,7 @@
-* 0.4.2 - Mid-Hudson Valley LUG - released 06/06/2005
+* 0.4.3 - Untitled - released 23/06/2005
+- Disable digests in rpmdb too. (Bert de Bruijn)
+
+* 0.4.2 - Mid-Hudson Valley LUG - released 22/06/2005
 - Use 160bit SHA1 instead of 128bit MD5
 - Make relative links instead of absolute
 - Added --root option
@@ -10,6 +13,7 @@
 - Fixed sort differences when running using cron or manual (LC_ALL='C')
 - Added internal exclude list for common unwanted files
 - Fixed a bug regarding RPM md5sum checking
+- Added a dconf manpage
 
 * 0.4.1 - released 24/11/2004
 - Fixed a bug with md5sum checking
