@@ -295,7 +295,7 @@ def mail(subject, msg):
 			'Currently logged on users:\n' + os.popen('who').read() + '\n' + \
 			subject + '\n\n' + msg
 		for email in cf.mailto.split():
-			smtp.sendmail('dconf@%s' % os.uname()[1], email, 'To: %s' + email + '\n' + msg)
+			smtp.sendmail('dconf@%s' % os.uname()[1], email, 'To: ' + email + '\n' + msg)
 		smtp.quit()
 	except:
 		info(1, 'Sending mail via %s failed.' % cf.smtpserver)
@@ -400,7 +400,10 @@ def main():
 				owner, group = getowner(uid, gid)
 				title = '--[ Cmd: %s %s ]--(%04o, %s, %s, %s)--' % (cmd, extra, stat.S_IMODE(mode), owner, group, size)
 				log.write(title + '-' * (80 - len(title)) + '\n')
-				(o, i) = popen2.popen4('%s %s' % (cmd, extra))
+				if not op.root:
+					(o, i) = popen2.popen4('%s %s' % (cmd, extra))
+				else:
+					(o, i) = popen2.popen4('chroot %s %s %s' % (op.root, cmd, extra))
 				log.write(o.read() + '\n')
 
 		if cf.sections[section].has_key('files'):
@@ -409,7 +412,7 @@ def main():
 				if not flist: continue
 				extra = '|'.join(flist[1:])
 				if extra: extra = extra + ' '
-				for file in glob.glob(os.path.join(op.root, flist[0].strip())):
+				for file in glob.glob(op.root + flist[0].strip()):
 					if not file or not os.path.isfile(file): continue
 
 					if fnmatches(file):
