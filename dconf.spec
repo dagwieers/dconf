@@ -17,7 +17,8 @@ Source: http://dag.wieers.com/home-made/dconf/dconf-%{version}.tar.bz2
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
 BuildArch: noarch
-Requires: python >= 2.3
+BuildRequires: python
+Requires: python
 
 %description
 Dconf is a tool to collect a system's hardware and software configuration.

@@ -288,14 +288,9 @@ def mail(subject, msg):
 	try:
 		smtp = smtplib.SMTP(cf.smtpserver)
 #		server.set_debuglevel(1)
-		msg = 'Subject: [dconf] %s\n\n' % subject + '\n' + \
-			'Current time:\n' + os.popen('date').read() + '\n' + \
-			'System information:\n'+ os.popen('uname -a').read() + '\n' + \
-			'Uptime:\n' + os.popen('uptime').read() + '\n' + \
-			'Currently logged on users:\n' + os.popen('who').read() + '\n' + \
-			subject + '\n\n' + msg
+		msg = 'Subject: [dconf] %s\n\nCurrent time:\n%s\nSystem information:\n%s\nUptime:\n%s\nCurrently logged on users:\n%s\n%s\n\n%s' % (subject, os.popen('date').read(), os.popen('uname -a').read(), os.popen('uptime').read(), os.popen('who').read(), subject, msg)
 		for email in cf.mailto.split():
-			smtp.sendmail('dconf@%s' % os.uname()[1], email, 'To: ' + email + '\n' + msg)
+			smtp.sendmail('dconf@%s' % os.uname()[1], email, 'To: %s\n%s' % (email, msg))
 		smtp.quit()
 	except:
 		info(1, 'Sending mail via %s failed.' % cf.smtpserver)
