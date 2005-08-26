@@ -1,0 +1,9 @@
+#!/bin/bash
+base='/var/lib/dpkg/info'
+for i in $(dpkg -l | grep ^ii | cut -d' ' -f3); do
+	if [ -f "$base/$i.conffiles" ]; then
+		echo "===$i==="
+		cat "$base/$i.conffiles"
+		echo
+	fi
+done

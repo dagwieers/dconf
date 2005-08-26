@@ -17,12 +17,11 @@ class Options:
 		self.dist = None
 		self.output = None
 		self.quiet = False
-		self.root = ''
 		self.verbose = 1
 
 		try:
-			opts, args = getopt.getopt (args, 'c:ho:qr:v',
-				['config=', 'help', 'output=', 'quiet', 'root=', 'verbose', 'version'])
+			opts, args = getopt.getopt (args, 'c:ho:q:v',
+				['config=', 'help', 'output=', 'quiet', 'verbose', 'version'])
 		except getopt.error, exc:
 			print 'dconf: %s, try dconf -h for a list of all the options' % str(exc)
 			sys.exit(1)
@@ -38,8 +37,6 @@ class Options:
 				self.output=arg
 			elif opt in ['-q', '--quiet']:
 				self.quiet = True
-			elif opt in ['-r', '--root']:
-				self.root = arg
 			elif opt in ['-v', '--verbose']:
 				self.verbose = self.verbose + 1
 			elif opt in ['--version']:
@@ -61,7 +58,7 @@ class Options:
 		print 'python %s' % sys.version
 
 	def usage(self):
-		print 'usage: dconf [-q] [-v] [-c config] [-o output] [-r root]'
+		print 'usage: dconf [-q] [-v] [-c config] [-o output]'
 
 	def help(self):
 		print '''Create a system's hardware and software configuration snapshot
@@ -70,7 +67,6 @@ Dconf options:
   -c, --config=file    specify alternative configfile
   -o, --output=file    write output to given file
   -q, --quiet          minimal output
-  -r, --root=root      work on a different root directory
   -v, --verbose        increase verbosity
   -vv, -vvv            increase verbosity more
 '''
@@ -303,7 +299,7 @@ def main():
 		import rpm
 		ts = rpm.TransactionSet()
 #		ts.setVSFlags(rpm.RPMVSF_NORSA | rpm.RPMVSF_NODSA)
-		ts.setVSFlags(rpm._RPMVSF_NOSIGNATURES | rpm._RPMVSF_NODIGESTS)
+		ts.setVSFlags(rpm._RPMVSF_NOSIGNATURES | rpm.RPMVSF_NOHDRCHK | rpm._RPMVSF_NODIGESTS | rpm.RPMVSF_NEEDPAYLOAD)
 	except:
 #	else:
 		info(2, 'Disabling RPM capability since the rpm-python bindings could not be loaded.')
@@ -376,7 +372,7 @@ def main():
 				cmdline = line.split()
 				if not cmdline: continue
 
-				cmd = which(os.path.join(op.root, cmdline[0].strip()))
+				cmd = which(cmdline[0].strip())
 				extra = ' '.join(cmdline[1:])
 				if not cmd:
 					info(5, 'Cmd %s not found in PATH, excluding.' % cmdline[0].strip())
@@ -395,10 +391,7 @@ def main():
 				owner, group = getowner(uid, gid)
 				title = '--[ Cmd: %s %s ]--(%04o, %s, %s, %s)--' % (cmd, extra, stat.S_IMODE(mode), owner, group, size)
 				log.write(title + '-' * (80 - len(title)) + '\n')
-				if not op.root:
-					(o, i) = popen2.popen4('%s %s' % (cmd, extra))
-				else:
-					(o, i) = popen2.popen4('chroot %s %s %s' % (op.root, cmd, extra))
+				(o, i) = popen2.popen4('%s %s' % (cmd, extra))
 				log.write(o.read() + '\n')
 
 		if cf.sections[section].has_key('files'):
@@ -407,7 +400,7 @@ def main():
 				if not flist: continue
 				extra = '|'.join(flist[1:])
 				if extra: extra = extra + ' '
-				for file in glob.glob(op.root + flist[0].strip()):
+				for file in glob.glob(flist[0].strip()):
 					if not file or not os.path.isfile(file): continue
 
 					if fnmatches(file):

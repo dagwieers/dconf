@@ -1,3 +1,6 @@
 #!/bin/bash
-
-for pkg in $(rpm -qa | sort ); do echo "===$pkg==="; rpm -qc $pkg; echo; done
+for pkg in $(rpm -qa | sort ); do
+	echo "===$pkg==="
+	rpm -qc $pkg
+	echo
+done

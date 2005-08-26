@@ -20,7 +20,9 @@
 ### Restore tool (dconf-restore)
 + Add tool to restore files from dconf log (say: dconf-restore --root /tmp /etc/sysctl.conf)
 
+### Sections
++ sysctl is disabled as it performs a change. Sadly sysctl -a returns random stuff -> false positive
++ netstat is disabled since it often shows different output -> false postive
+
 ### Bugs
 + Dconf needs a very recent python (2.3) with unified_diff support (for email-functionality only)
-+ sysctl actually performs a change and this goes against the intent, sadly sysctl -a returns random/variable stuff -> false positive
-+ netstat is disabled since it often shows different output -> false postive

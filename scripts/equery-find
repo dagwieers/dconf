@@ -1,0 +1,6 @@
+#!/bin/bash
+for pkg in $(equery list | cut -d' ' -f5 | sort); do
+	echo "===${pkg%-[0-9]*}==="
+	equery files --filter=conf ${pkg%-[0-9]*}
+	echo
+done
