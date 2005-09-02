@@ -4,7 +4,7 @@ import os, sys, glob, re, shutil, getopt, popen2, time, fnmatch
 import ConfigParser, urlparse, pwd, grp, stat, syslog
 import difflib, smtplib, gzip, md5, sha
 
-VERSION = '0.4.3'
+VERSION = '0.5.0'
 
 enable = ('yes', 'on', 'true', '1')
 disable = ('no', 'off', 'false', '0')
@@ -364,7 +364,9 @@ def main():
 		log = dzopen(logfile, 'w')
 
 	info(2, 'Building file: %s' % logfile)
-	for section in cf.sections.keys():
+	sections = cf.sections.keys()
+	sections.sort()
+	for section in sections:
 		stitle = False
 
 		if cf.sections[section].has_key('cmds'):

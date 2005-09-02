@@ -4,7 +4,7 @@
 
 Summary: Create a system's hardware and software configuration snapshot
 Name: dconf
-Version: 0.4.3
+Version: 0.5.0
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -41,10 +41,7 @@ files to send out or compare with other systems.
 
 %install
 %{__rm} -rf %{buildroot}
-%makeinstall
-
-### Install configfile for this distribution
-%{__install} -Dp -m0644 config/dconf-redhat.conf %{buildroot}%{_sysconfdir}/dconf.conf
+%{__make} install install-redhat DESTDIR="%{buildroot}"
 
 %clean
 %{__rm} -rf %{buildroot}
@@ -59,8 +56,8 @@ files to send out or compare with other systems.
 %{_localstatedir}/log/dconf/
 
 %changelog
-* Wed Jun 21 2005 Dag Wieers <dag@wieers.com> - 0.4.3-1
-- Updated to release 0.4.3.
+* Fri Sep 02 2005 Dag Wieers <dag@wieers.com> - 0.5.0-1
+- Updated to release 0.5.0.
 
 * Wed Jun 22 2005 Dag Wieers <dag@wieers.com> - 0.4.2-1
 - Updated to release 0.4.2.

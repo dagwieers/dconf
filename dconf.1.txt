@@ -9,7 +9,7 @@ dconf - create a system's hardware and software configuration snapshot
 
 SYNOPSIS
 --------
-dconf [-q] [-v] [-c config] [-o output] [-r root]
+dconf [-q] [-v] [-c config] [-o output]
 
 DESCRIPTION
 -----------
@@ -69,6 +69,14 @@ Man:::
 	Well, I think it would be best if I perhaps started off with just the one and then see how it goes.
 For more arguments, see:::
 	http://orangecow.org/pythonet/sketches/argument.htm[]
+
+USAGE
+-----
+To create a snapshot of the current system:::
+	dconf
+
+To check the latest changes against the previous snapshot:::
+	zdiff -u /var/log/dconf/dconf-$HOSTNAME-previous.log.gz /var/log/dconf/dconf-$HOSTNAME-latest.log.gz
 
 ADDING FILES OR COMMANDS
 ------------------------

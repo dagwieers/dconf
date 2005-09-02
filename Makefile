@@ -38,7 +38,7 @@ clean:
 %.html: %.txt
 	asciidoc -b xhtml11 -d manpage $<
 
-%: %.xml
+%.1: %.1.xml
 	xmlto man $<
 
 %.xml: %.txt

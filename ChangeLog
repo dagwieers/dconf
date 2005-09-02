@@ -1,8 +1,9 @@
-* 0.4.3 - Untitled - released 06/08/2005
+* 0.5.0 - Return To Hasselt - released 02/09/2005
 - Disable digests in rpmdb too. (Bert de Bruijn)
 - Removed sysctl -p from dconf.conf (Bernhard Weisshuhn)
 - Added openntpd, postgresql, shorewall, syslog-ng sections (Bernhard Weisshuhn)
 - Added axfdns, dnscache, tinydns sections (Bernhard Weisshuhn)
+- Sections are now sorted (less python-specific output, but breaks older snapshots)
 
 * 0.4.2 - Mid-Hudson Valley LUG - released 22/06/2005
 - Use 160bit SHA1 instead of 128bit MD5
