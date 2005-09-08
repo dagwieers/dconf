@@ -1,15 +1,18 @@
 dconf(1)
 ========
 Dag Wieers <dag@wieers.com>
-v0.4.2, June 2005
+v0.5.0, September 2005
+
 
 NAME
 ----
 dconf - create a system's hardware and software configuration snapshot
 
+
 SYNOPSIS
 --------
 dconf [-q] [-v] [-c config] [-o output]
+
 
 DESCRIPTION
 -----------
@@ -34,6 +37,7 @@ config file and you have to find which. As a performance tuner, you can
 capture the state of the system configuration in between performance
 tests/benchmarks.
 
+
 OPTIONS
 -------
 -c, --config file::
@@ -51,6 +55,7 @@ OPTIONS
 -vv, -vvv::
 	increase verbosity more
 
+
 ARGUMENTS
 ---------
 Man:::
@@ -60,47 +65,65 @@ Receptionist:::
 Man:::
 	No, I haven't, this is my first time.
 Receptionist:::
-	I see. Well, do you want to have just one argument, or were you thinking of taking a course?
+	I see. Well, do you want to have just one argument, or were
+	you thinking of taking a course?
 Man:::
 	Well, what is the cost?
 Receptionist:::
-	Well, It's one pound for a five minute argument, but only eight pounds for a course of ten.
+	Well, It's one pound for a five minute argument, but only
+	eight pounds for a course of ten.
 Man:::
-	Well, I think it would be best if I perhaps started off with just the one and then see how it goes.
+	Well, I think it would be best if I perhaps started off with
+	just the one and then see how it goes.
 For more arguments, see:::
 	http://orangecow.org/pythonet/sketches/argument.htm[]
+
 
 USAGE
 -----
 To create a snapshot of the current system:::
-	dconf
+.....
+dconf
+.....
 
 To check the latest changes against the previous snapshot:::
-	zdiff -u /var/log/dconf/dconf-$HOSTNAME-previous.log.gz /var/log/dconf/dconf-$HOSTNAME-latest.log.gz
+.....
+zdiff -u /var/log/dconf/dconf-$HOSTNAME-previous.log.gz /var/log/dconf/dconf-$HOSTNAME-latest.log.gz
+.....
+
 
 ADDING FILES OR COMMANDS
 ------------------------
-You can add files and commands to /etc/dconf-custom.conf and include that from your /etc/dconf.conf, however I would appreciate if you send me any changes you make so that they can be include in the next version.
+You can add files and commands to /etc/dconf-custom.conf and include
+that from your /etc/dconf.conf, however I would appreciate if you send
+me any changes you make so that they can be include in the next version.
 
-Dconf was design so that an excessive list of configuration files or commands would not harm the execution of the program or the content of the snapshot file.
+Dconf was design so that an excessive list of configuration files or
+commands would not harm the execution of the program or the content of
+the snapshot file.
 
 Please send changes to: Dag Wieers mailto:dag@wieers.com[]
 
+
 BUGS
 ----
-Please see the TODO file for known bugs and future plans.
+See the TODO file for known bugs and future plans.
+
 
 FILES
 -----
-/etc/dconf.conf, the main Dconf configuration file (replaced on update)
+/etc/dconf.conf::
+	the main Dconf configuration file (replaced on update)
+/etc/dconf-custom.conf::
+	the customized configuration file (customize this one)
+/var/log/dconf/::
+	the location of the snapshot files
 
-/etc/dconf-custom.conf, the customized configuration file (customize this one)
-
-/var/log/dconf/, the location of the snapshot files
 
 SEE ALSO
 --------
 snap(8)
+
 
 AUTHOR
 ------

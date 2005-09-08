@@ -10,9 +10,6 @@ License: GPL
 Group: System Environment/Base
 URL: http://dag.wieers.com/home-made/dconf/
 
-Packager: Dag Wieers <dag@wieers.com>
-Vendor: Dag Apt Repository, http://dag.wieers.com/apt/
-
 Source: http://dag.wieers.com/home-made/dconf/dconf-%{version}.tar.bz2
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
@@ -56,7 +53,7 @@ files to send out or compare with other systems.
 %{_localstatedir}/log/dconf/
 
 %changelog
-* Fri Sep 02 2005 Dag Wieers <dag@wieers.com> - 0.5.0-1
+* Fri Sep 09 2005 Dag Wieers <dag@wieers.com> - 0.5.0-1
 - Updated to release 0.5.0.
 
 * Wed Jun 22 2005 Dag Wieers <dag@wieers.com> - 0.4.2-1

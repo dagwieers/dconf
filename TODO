@@ -5,7 +5,7 @@
 ### Usability
 + Make mailing diffs smart (keep the headers and diff content)
 + Add support for (recursive) dirs (dirs = )
-+ Add dpkg support
++ Add dpkg support (if it has similar functionality as rpmdb)
 + Dconf should also check time/owner/perms next to md5
 
 ### Output
