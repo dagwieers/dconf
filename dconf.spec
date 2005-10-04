@@ -40,6 +40,11 @@ files to send out or compare with other systems.
 %{__rm} -rf %{buildroot}
 %{__make} install install-redhat DESTDIR="%{buildroot}"
 
+%postun
+if [ $1 -eq 0 ]; then
+	%{__rm} -f /etc/cron.*/dconf
+fi
+
 %clean
 %{__rm} -rf %{buildroot}
 
