@@ -19,6 +19,8 @@ contact me as well. :) Send an email to: Dag Wieers <dag@wieers.com>
 + Add support for (recursive) dirs (dirs = )
 + Add dpkg support (if it has similar functionality as rpmdb)
 + Dconf should also check time/owner/perms next to md5
++ Make dconf not delete the last log (even when it's a duplicate)
++ Make dconf return a different return code depending on the result
 
 ### Output
 + Allow XML or HTML output (in some way)
