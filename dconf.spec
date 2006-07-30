@@ -4,7 +4,7 @@
 
 Summary: Create a system's hardware and software configuration snapshot
 Name: dconf
-Version: 0.5.1
+Version: 0.5.1svn
 Release: 1
 License: GPL
 Group: System Environment/Base
@@ -58,6 +58,9 @@ fi
 %{_localstatedir}/log/dconf/
 
 %changelog
+* Sun Jul 30 2006 Dag Wieers <dag@wieers.com> - 0.5.1svn-1
+- Updated to release 0.5.1svn.
+
 * Sun Jul 30 2006 Dag Wieers <dag@wieers.com> - 0.5.1-1
 - Updated to release 0.5.1.
 

@@ -4,7 +4,7 @@ import os, sys, glob, re, shutil, getopt, popen2, time, fnmatch
 import ConfigParser, urlparse, pwd, grp, stat, syslog
 import difflib, smtplib, gzip, md5, sha
 
-VERSION = '0.5.1'
+VERSION = '0.5.1svn'
 
 enable = ('yes', 'on', 'true', '1')
 disable = ('no', 'off', 'false', '0')
