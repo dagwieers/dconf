@@ -1,5 +1,8 @@
-* 0.5.1 - ... - release 02/10/2005
+* 0.5.1 - Munchkin - release 30/07/2006
 - Fixed -q option to not require argument (Stelios Bounanos)
+- Syslog now has proper tag and pid associated
+- Moved proprietary sections together
+- Added netiq and iproute2 section
 
 * 0.5.0 - Return To Hasselt - released 09/09/2005
 - Disable digests in rpmdb too. (Bert de Bruijn)

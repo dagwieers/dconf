@@ -4,7 +4,7 @@ import os, sys, glob, re, shutil, getopt, popen2, time, fnmatch
 import ConfigParser, urlparse, pwd, grp, stat, syslog
 import difflib, smtplib, gzip, md5, sha
 
-VERSION = '0.5.0'
+VERSION = '0.5.1'
 
 enable = ('yes', 'on', 'true', '1')
 disable = ('no', 'off', 'false', '0')
@@ -323,7 +323,8 @@ def main():
 #	os.setenv('LC_ALL', 'C')
 	os.environ['LC_ALL'] = 'C'
 
-	syslog.syslog('Dconf started.')
+	syslog.openlog('dconf[%d]' % os.getpid())
+	syslog.syslog('Dconf %s started.' % VERSION)
 
 	### Add to cron
 	if cf.cron and not op.output:
@@ -434,7 +435,8 @@ def main():
 					log.write(o.read() + '\n')
 	log.close()
 
-	syslog.syslog('Dconf ended succesfully.')
+	syslog.syslog('Dconf %s ended succesfully.' % VERSION)
+	syslog.closelog()
 
 	if op.output:
 		return
