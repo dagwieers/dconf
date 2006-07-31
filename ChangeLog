@@ -1,6 +1,7 @@
 * 0.5.2 - ... - release 31/07/2006
 - Added cpuid to hardware section
-- Added ld.so, pam, powerbroker and vas-client sections
+- Added fam, ld.so, pam, powerbroker and vas-client sections
+- Improvements to firewall, hardware, kerberos, php, rsync, security and xinetd sections
 
 * 0.5.1 - Munchkin - release 30/07/2006
 - Fixed -q option to not require argument (Stelios Bounanos)
