@@ -1,8 +1,11 @@
-* 0.5.2 - ... - release 31/07/2006
+* 0.5.1svn - ... - release 31/07/2006
 - Added cpuid to hardware section
 - Added fam, ld.so, pam, powerbroker and vas-client sections
 - Improvements to firewall, hardware, kerberos, php, rsync, security and xinetd sections
+- Improved amavisd-new, ipsec, postfix, proftpd, squirrelmail, yum sections (Tuomo Soini)
+- Added awstats, heartbeat, l2tpd, ldirectord, ppp, proftpd, vsftpd, x2ltpd (Tuomo Soini)
 
+>>>>>>> .r5051
 * 0.5.1 - Munchkin - release 30/07/2006
 - Fixed -q option to not require argument (Stelios Bounanos)
 - Syslog now has proper tag and pid associated

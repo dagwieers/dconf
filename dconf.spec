@@ -38,7 +38,7 @@ files to send out or compare with other systems.
 
 %install
 %{__rm} -rf %{buildroot}
-%{__make} install install-redhat DESTDIR="%{buildroot}"
+%{__make} install-redhat DESTDIR="%{buildroot}"
 
 %postun
 if [ $1 -eq 0 ]; then
