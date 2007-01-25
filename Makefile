@@ -22,18 +22,18 @@ install: docs
 	install -Dp -m0755 dconf $(DESTDIR)$(bindir)/dconf
 	install -dp -m0755 $(DESTDIR)$(logdir)
 
-	@echo "Also do: make install-<dist>   (with dist: debian|redhat|suse)"
-
 	make install -C docs
 
+	@echo "Also do: make install-<dist>   (with dist: debian|redhat|suse)"
+
 install-redhat: install
-	-[ ! -f $(DESTDIR)$(sysconfdir)/dconf.d/redhat.conf ] && install -Dp -m0644 config/redhat.conf $(DESTDIR)$(sysconfdir)/dconf.d/redhat.conf
+	install -Dp -m0644 config/redhat.conf $(DESTDIR)$(sysconfdir)/dconf.d/redhat.conf
 
 install-debian: install
-	-[ ! -f $(DESTDIR)$(sysconfdir)/dconf.d/debian.conf ] && install -Dp -m0644 config/debian.conf $(DESTDIR)$(sysconfdir)/dconf.d/debian.conf
+	install -Dp -m0644 config/debian.conf $(DESTDIR)$(sysconfdir)/dconf.d/debian.conf
 
 install-suse:
-	-[ ! -f $(DESTDIR)$(sysconfdir)/dconf.d/suse.conf ] && install -Dp -m0644 config/suse.conf $(DESTDIR)$(sysconfdir)/dconf.d/suse.conf
+	install -Dp -m0644 config/suse.conf $(DESTDIR)$(sysconfdir)/dconf.d/suse.conf
 
 docs:
 	make -C docs all

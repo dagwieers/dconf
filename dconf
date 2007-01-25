@@ -90,6 +90,8 @@ class Config:
 	def read(self, configfile):
 		self.cfg = ConfigParser.ConfigParser()
 
+		info(2, 'Reading config file %s' % (configfile))
+
 		(s,b,p,q,f,o) = urlparse.urlparse(configfile)
 		if s in ('http', 'ftp', 'file'):
 			configfh = urllib.urlopen(configfile)
