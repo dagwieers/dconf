@@ -49,6 +49,7 @@ contact me as well. :) Send an email to: Dag Wieers <dag@wieers.com>
 
 ### Documentation
 + Add general scenarios that make use of the dconf snapshots
++ Comply to PEP8: http://www.python.org/dev/peps/pep-0008/
 
 ### Bugs
 + Dconf needs a very recent python (2.3) with unified_diff support (for

@@ -4,8 +4,8 @@
 - Improvements to firewall, hardware, kerberos, php, rsync, security and xinetd sections
 - Improved amavisd-new, ipsec, postfix, proftpd, squirrelmail, yum sections (Tuomo Soini)
 - Added awstats, heartbeat, l2tpd, ldirectord, ppp, proftpd, vsftpd, x2ltpd (Tuomo Soini)
+- Added /etc/dconf.d/ to allow configuration components to reside in seperate files (Gavin Carr)
 
->>>>>>> .r5051
 * 0.5.1 - Munchkin - release 30/07/2006
 - Fixed -q option to not require argument (Stelios Bounanos)
 - Syslog now has proper tag and pid associated

@@ -50,15 +50,15 @@ fi
 
 %files
 %defattr(-, root, root, 0755)
-%doc AUTHORS ChangeLog COPYING README THANKS TODO config/ scripts/
+%doc AUTHORS ChangeLog COPYING README THANKS TODO config/ docs/*.txt scripts/
 %doc %{_mandir}/man1/dconf.1*
-%config %{_sysconfdir}/dconf.conf
-%config(noreplace) %{_sysconfdir}/dconf-custom.conf
+%config(noreplace) %{_sysconfdir}/dconf.conf
+%config %{_sysconfdir}/dconf.d/redhat.conf
 %{_bindir}/dconf
 %{_localstatedir}/log/dconf/
 
 %changelog
-* Sun Jul 30 2006 Dag Wieers <dag@wieers.com> - 0.5.1svn-1
+* Mon Jul 31 2006 Dag Wieers <dag@wieers.com> - 0.5.1svn-1
 - Updated to release 0.5.1svn.
 
 * Sun Jul 30 2006 Dag Wieers <dag@wieers.com> - 0.5.1-1

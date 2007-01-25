@@ -2,7 +2,7 @@
 
 import os, sys, glob, re, shutil, getopt, popen2, time, fnmatch
 import ConfigParser, urlparse, pwd, grp, stat, syslog
-import difflib, smtplib, gzip, md5, sha
+import difflib, gzip, md5, sha
 
 VERSION = '0.5.1svn'
 
@@ -75,10 +75,19 @@ class Config:
 	def __init__(self):
 		self.sections = {}
 
-		self.includefile(op.configfile)
-		self.include = self.getoption('main', 'include', None)
+		self.read(op.configfile)
 
-	def includefile(self, configfile):
+		self.confdir = self.getoption('main', 'confdir', '/etc/dconf.d')
+		self.logdir = self.getoption('main', 'logdir', '/var/log/dconf')
+
+		if not op.output:
+			op.output = self.getoption('main', 'output', None)
+
+		self.quiet = not self.getoption('main', 'quiet', 'no') in disable
+		if op.verbose == 1 and self.quiet:
+			op.verbose = 0
+
+	def read(self, configfile):
 		self.cfg = ConfigParser.ConfigParser()
 
 		(s,b,p,q,f,o) = urlparse.urlparse(configfile)
@@ -99,23 +108,16 @@ class Config:
 
 		self.compression = self.getoption('main', 'compression', 'gzip')
 		self.cron = self.getoption('main', 'cron', None)
-		self.logdir = self.getoption('main', 'logdir', '/var/log/dconf')
+		self.mailfrom = self.getoption('main', 'mailfrom', 'mrepo@%s' % os.uname()[1])
 		self.mailto = self.getoption('main', 'mailto', None)
 		self.smtpserver = self.getoption('main', 'smtp-server', 'localhost')
 		self.rpm = not self.getoption('main', 'rpm', 'no') in disable
 		self.exclude = self.getoption('main', 'exclude', excludelist).split()
 
-		if not op.output:
-			op.output = self.getoption('main', 'output', None)
-
-		self.quiet = not self.getoption('main', 'quiet', 'no') in disable
-		if op.verbose == 1 and self.quiet:
-			op.verbose = 0
-
 		sections = self.cfg.sections()
 		sections.sort()
 		for section in sections:
-			if section in ['main']:
+			if section in ('main', ):
 				continue
 			else:
 				self.sections[section] = {}
@@ -282,14 +284,25 @@ def fnmatches(file):
 def mail(subject, msg):
 	info(2, 'Sending mail to: %s' % cf.mailto)
 	try:
+		import smtplib
 		smtp = smtplib.SMTP(cf.smtpserver)
 #		server.set_debuglevel(1)
 		msg = 'Subject: [dconf] %s\n\nCurrent time:\n%s\nSystem information:\n%s\nUptime:\n%s\nCurrently logged on users:\n%s\n%s\n\n%s' % (subject, os.popen('date').read(), os.popen('uname -a').read(), os.popen('uptime').read(), os.popen('who').read(), subject, msg)
 		for email in cf.mailto.split():
-			smtp.sendmail('dconf@%s' % os.uname()[1], email, 'To: %s\n%s' % (email, msg))
+			smtp.sendmail(cf.mailfrom, email, 'To: %s\n%s' % (email, msg))
 		smtp.quit()
 	except:
 		info(1, 'Sending mail via %s failed.' % cf.smtpserver)
+
+def readconfig():
+	cf = Config()
+	if cf.confdir and os.path.isdir(cf.confdir):
+		files = glob.glob(os.path.join(cf.confdir, '*.conf'))
+		files.sort()
+		for configfile in files:
+			cf.read(configfile)
+#		cf.update(configfile)
+	return cf
 
 def main():
 	global extension, hostname, timestamp, ts
@@ -468,15 +481,8 @@ except NameError:
 
 ### Main entrance
 if __name__ == '__main__':
-	op=Options(sys.argv[1:])
-	cf=Config()
-	for cfgfile in cf.include.split():
-		if os.path.isfile(cfgfile):
-			info(2, 'Processing configfile %s.' % cfgfile)
-			cf.includefile(cfgfile)
-		else:
-			info(3, 'Configfile %s does not exist, ignoring.')
-
+	op = Options(sys.argv[1:])
+	cf = readconfig()
 	try:
 		main()
 	except KeyboardInterrupt, e:

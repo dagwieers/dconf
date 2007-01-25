@@ -16,41 +16,34 @@ logdir = $(localstatedir)/log/dconf
 all:
 	@echo "Nothing to be build."
 
-install: dconf.1
-	-@[ ! -f $(DESTDIR)$(sysconfdir)/dconf-custom.conf ] && install -D -m0644 config/dconf-custom.conf $(DESTDIR)$(sysconfdir)/dconf-custom.conf
+install: docs
+	-@[ ! -f $(DESTDIR)$(sysconfdir)/dconf.conf ] && install -D -m0644 config/dconf.conf $(DESTDIR)$(sysconfdir)/dconf.conf
 
 	install -Dp -m0755 dconf $(DESTDIR)$(bindir)/dconf
-	install -Dp -m0644 dconf.1 $(DESTDIR)$(mandir)/man1/dconf.1
-
 	install -dp -m0755 $(DESTDIR)$(logdir)
+
 	@echo "Also do: make install-<dist>   (with dist: debian|redhat|suse)"
 
+	make install -C docs
+
 install-redhat: install
-	-[ ! -f $(DESTDIR)$(sysconfdir)/dconf.conf ] && install -Dp -m0644 config/dconf-redhat.conf $(DESTDIR)$(sysconfdir)/dconf.conf
+	-[ ! -f $(DESTDIR)$(sysconfdir)/dconf.d/redhat.conf ] && install -Dp -m0644 config/redhat.conf $(DESTDIR)$(sysconfdir)/dconf.d/redhat.conf
 
 install-debian: install
-	-[ ! -f $(DESTDIR)$(sysconfdir)/dconf.conf ] && install -Dp -m0644 config/dconf-debian.conf $(DESTDIR)$(sysconfdir)/dconf.conf
+	-[ ! -f $(DESTDIR)$(sysconfdir)/dconf.d/debian.conf ] && install -Dp -m0644 config/debian.conf $(DESTDIR)$(sysconfdir)/dconf.d/debian.conf
 
 install-suse:
-	-[ ! -f $(DESTDIR)$(sysconfdir)/dconf.conf ] && install -Dp -m0644 config/dconf-suse.conf $(DESTDIR)$(sysconfdir)/dconf.conf
+	-[ ! -f $(DESTDIR)$(sysconfdir)/dconf.d/suse.conf ] && install -Dp -m0644 config/suse.conf $(DESTDIR)$(sysconfdir)/dconf.d/suse.conf
 
-clean:
-	rm -f dconf.1 dconf.1.html dconf.1.xml
+docs:
+	make -C docs all
 
-%.html: %.txt
-	asciidoc -b xhtml11 -d manpage $<
-
-%.1: %.1.xml
-	xmlto man $<
-
-%.xml: %.txt
-	asciidoc -b docbook -d manpage $<
-
-dist: clean
-	find . ! -wholename '*/.svn*' | pax -d -w -x ustar -s ,^,$(name)-$(version)/, | bzip2 >../$(name)-$(version).tar.bz2
+dist: docs
+	make -C docs dist
+	find . ! -path '*/.svn*' | pax -d -w -x ustar -s ',^.,$(name)-$(version),' | bzip2 >../$(name)-$(version).tar.bz2
 
 rpm: dist
 	rpmbuild -tb --clean --rmsource --rmspec --define "_rpmfilename %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm" --define "_rpmdir ../" ../$(name)-$(version).tar.bz2
 
 srpm: dist
-	rpmbuild -ts --clean --rmsource --rmspec --define "_rpmfilename %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm" --define "_srcrpmdir../" ../$(name)-$(version).tar.bz2
+	rpmbuild -ts --clean --rmsource --rmspec --define "_rpmfilename %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm" --define "_srcrpmdir ../" ../$(name)-$(version).tar.bz2
