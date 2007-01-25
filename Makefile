@@ -22,7 +22,7 @@ install: docs
 	install -Dp -m0755 dconf $(DESTDIR)$(bindir)/dconf
 	install -dp -m0755 $(DESTDIR)$(logdir)
 
-	make install -C docs
+	-make install -C docs
 
 	@echo "Also do: make install-<dist>   (with dist: debian|redhat|suse)"
 
