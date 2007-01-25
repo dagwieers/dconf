@@ -2,6 +2,8 @@
 - Added cpuid to hardware section
 - Added fam, ld.so, pam, powerbroker and vas-client sections
 - Improvements to firewall, hardware, kerberos, php, rsync, security and xinetd sections
+- Added openvz section
+- Improvements to dovecot and postfix sections
 - Improved amavisd-new, ipsec, postfix, proftpd, squirrelmail, yum sections (Tuomo Soini)
 - Added awstats, heartbeat, l2tpd, ldirectord, ppp, proftpd, vsftpd, x2ltpd (Tuomo Soini)
 - Added /etc/dconf.d/ to allow configuration components to reside in seperate files (Gavin Carr)
