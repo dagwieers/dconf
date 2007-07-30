@@ -12,19 +12,24 @@ localstatedir = /var
 
 logdir = $(localstatedir)/log/dconf
 
+.PHONY: all install docs clean
 
-all:
+all: docs
 	@echo "Nothing to be build."
 
-install: docs
+docs:
+	$(MAKE) -C docs docs
+
+install:
 	-@[ ! -f $(DESTDIR)$(sysconfdir)/dconf.conf ] && install -D -m0644 config/dconf.conf $(DESTDIR)$(sysconfdir)/dconf.conf
 
 	install -Dp -m0755 dconf $(DESTDIR)$(bindir)/dconf
 	install -dp -m0755 $(DESTDIR)$(logdir)
 
-	-make install -C docs
-
 	@echo "Also do: make install-<dist>   (with dist: debian|redhat|suse)"
+
+docs-install:
+	$(MAKE) -C docs install
 
 install-redhat: install
 	install -Dp -m0644 config/redhat.conf $(DESTDIR)$(sysconfdir)/dconf.d/redhat.conf
@@ -35,12 +40,12 @@ install-debian: install
 install-suse:
 	install -Dp -m0644 config/suse.conf $(DESTDIR)$(sysconfdir)/dconf.d/suse.conf
 
-docs:
-	make -C docs all
+clean:
+	$(MAKE) -C docs clean
 
-dist: docs
-	make -C docs dist
-	find . ! -path '*/.svn*' | pax -d -w -x ustar -s ',^.,$(name)-$(version),' | bzip2 >../$(name)-$(version).tar.bz2
+dist: clean
+	$(MAKE) -C docs dist
+	find . ! -wholename '*/.svn*' | pax -d -w -x ustar -s ,^,$(name)-$(version)/, | bzip2 >../$(name)-$(version).tar.bz2
 
 rpm: dist
 	rpmbuild -tb --clean --rmsource --rmspec --define "_rpmfilename %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm" --define "_rpmdir ../" ../$(name)-$(version).tar.bz2
