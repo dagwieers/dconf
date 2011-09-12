@@ -41,55 +41,55 @@ tests/benchmarks.
 OPTIONS
 -------
 -c, --config file::
-	specify alternative configfile
+    specify alternative configfile
 
 -o, --output file::
-	write output to given file
+    write output to given file
 
 -q, --quiet::
-	minimal output
+    minimal output
 
 -v, --verbose::
-	increase verbosity
+    increase verbosity
 
 -vv, -vvv::
-	increase verbosity more
+    increase verbosity more
 
 
 ARGUMENTS
 ---------
 Man:::
-	Ah. I'd like to have an argument, please.
+    Ah. I'd like to have an argument, please.
 Receptionist:::
-	Certainly sir. Have you been here before?
+    Certainly sir. Have you been here before?
 Man:::
-	No, I haven't, this is my first time.
+    No, I haven't, this is my first time.
 Receptionist:::
-	I see. Well, do you want to have just one argument, or were
-	you thinking of taking a course?
+    I see. Well, do you want to have just one argument, or were
+    you thinking of taking a course?
 Man:::
-	Well, what is the cost?
+    Well, what is the cost?
 Receptionist:::
-	Well, It's one pound for a five minute argument, but only
-	eight pounds for a course of ten.
+    Well, It's one pound for a five minute argument, but only
+    eight pounds for a course of ten.
 Man:::
-	Well, I think it would be best if I perhaps started off with
-	just the one and then see how it goes.
+    Well, I think it would be best if I perhaps started off with
+    just the one and then see how it goes.
 For more arguments, see:::
-	http://orangecow.org/pythonet/sketches/argument.htm[]
+    http://orangecow.org/pythonet/sketches/argument.htm[]
 
 
 USAGE
 -----
-To create a snapshot of the current system:::
-.....
+To create a snapshot of the current system:
+----
 dconf
-.....
+----
 
-To check the latest changes against the previous snapshot:::
-.....
+To check the latest changes against the previous snapshot:
+----
 zdiff -u /var/log/dconf/dconf-$HOSTNAME-previous.log.gz /var/log/dconf/dconf-$HOSTNAME-latest.log.gz
-.....
+----
 
 
 ADDING FILES OR COMMANDS
@@ -113,11 +113,11 @@ See the TODO file for known bugs and future plans.
 FILES
 -----
 /etc/dconf.conf::
-	the main Dconf configuration file (replaced on update)
+    the main Dconf configuration file (replaced on update)
 /etc/dconf-custom.conf::
-	the customized configuration file (customize this one)
+    the customized configuration file (customize this one)
 /var/log/dconf/::
-	the location of the snapshot files
+    the location of the snapshot files
 
 
 SEE ALSO

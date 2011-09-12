@@ -1,0 +1,173 @@
+'\" t
+.\"     Title: dconf
+.\"    Author: Dag Wieers <dag@wieers.com>
+.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
+.\"      Date: September 2005
+.\"    Manual: \ \&
+.\"    Source: \ \& 0.5.0
+.\"  Language: English
+.\"
+.TH "DCONF" "1" "September 2005" "\ \& 0\&.5\&.0" "\ \&"
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+dconf \- create a system\'s hardware and software configuration snapshot
+.SH "SYNOPSIS"
+.sp
+dconf [\-q] [\-v] [\-c config] [\-o output]
+.SH "DESCRIPTION"
+.sp
+Dconf is a tool to collect a system\(cqs hardware and software configuration\&. It allows to take your system configuration with you on the road, compare identical systems (like nodes in a cluster) to troubleshoot HW or SW problems\&.
+.sp
+Dconf is also useful in projects where you have to manage changes as a team\&. Dconf can run periodically and send out system changes to a list of email addresses so that they can be revised and discussed in group\&.
+.sp
+You can customize your dconf configuration for specific needs, like making a profile of your laptop\(cqs hardware or copy specific software configuration files to send out or compare with other systems\&.
+.sp
+As a sysadmin, you won\(cqt become too paranoid if less experienced people have root\-access\&. As a consultant, you won\(cqt feel isolated if you don\(cqt have remote access to your systems\&. As a support engineer, you won\(cqt become frustrated if a customer has fiddled around with some important config file and you have to find which\&. As a performance tuner, you can capture the state of the system configuration in between performance tests/benchmarks\&.
+.SH "OPTIONS"
+.PP
+\-c, \-\-config file
+.RS 4
+specify alternative configfile
+.RE
+.PP
+\-o, \-\-output file
+.RS 4
+write output to given file
+.RE
+.PP
+\-q, \-\-quiet
+.RS 4
+minimal output
+.RE
+.PP
+\-v, \-\-verbose
+.RS 4
+increase verbosity
+.RE
+.PP
+\-vv, \-vvv
+.RS 4
+increase verbosity more
+.RE
+.SH "ARGUMENTS"
+.PP
+Man
+.RS 4
+Ah\&. I\(cqd like to have an argument, please\&.
+.RE
+.PP
+Receptionist
+.RS 4
+Certainly sir\&. Have you been here before?
+.RE
+.PP
+Man
+.RS 4
+No, I haven\(cqt, this is my first time\&.
+.RE
+.PP
+Receptionist
+.RS 4
+I see\&. Well, do you want to have just one argument, or were you thinking of taking a course?
+.RE
+.PP
+Man
+.RS 4
+Well, what is the cost?
+.RE
+.PP
+Receptionist
+.RS 4
+Well, It\(cqs one pound for a five minute argument, but only eight pounds for a course of ten\&.
+.RE
+.PP
+Man
+.RS 4
+Well, I think it would be best if I perhaps started off with just the one and then see how it goes\&.
+.RE
+.PP
+For more arguments, see
+.RS 4
+
+\m[blue]\fBhttp://orangecow\&.org/pythonet/sketches/argument\&.htm\fR\m[]
+.RE
+.SH "USAGE"
+.sp
+To create a snapshot of the current system:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+dconf
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+To check the latest changes against the previous snapshot:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+zdiff \-u /var/log/dconf/dconf\-$HOSTNAME\-previous\&.log\&.gz /var/log/dconf/dconf\-$HOSTNAME\-latest\&.log\&.gz
+.fi
+.if n \{\
+.RE
+.\}
+.SH "ADDING FILES OR COMMANDS"
+.sp
+You can add files and commands to /etc/dconf\-custom\&.conf and include that from your /etc/dconf\&.conf, however I would appreciate if you send me any changes you make so that they can be include in the next version\&.
+.sp
+Dconf was design so that an excessive list of configuration files or commands would not harm the execution of the program or the content of the snapshot file\&.
+.sp
+Please send changes to: Dag Wieers \m[blue]\fBdag@wieers\&.com\fR\m[]\&\s-2\u[1]\d\s+2
+.SH "BUGS"
+.sp
+See the TODO file for known bugs and future plans\&.
+.SH "FILES"
+.PP
+/etc/dconf\&.conf
+.RS 4
+the main Dconf configuration file (replaced on update)
+.RE
+.PP
+/etc/dconf\-custom\&.conf
+.RS 4
+the customized configuration file (customize this one)
+.RE
+.PP
+/var/log/dconf/
+.RS 4
+the location of the snapshot files
+.RE
+.SH "SEE ALSO"
+.sp
+snap(8)
+.SH "AUTHOR"
+.sp
+Written by Dag Wieers \m[blue]\fBdag@wieers\&.com\fR\m[]\&\s-2\u[1]\d\s+2
+.sp
+Homepage at \m[blue]\fBhttp://dag\&.wieers\&.com/home\-made/dconf/\fR\m[]
+.SH "AUTHOR"
+.PP
+\fBDag Wieers\fR <\&dag@wieers\&.com\&>
+.RS 4
+Author.
+.RE
+.SH "NOTES"
+.IP " 1." 4
+dag@wieers.com
+.RS 4
+\%mailto:dag@wieers.com
+.RE

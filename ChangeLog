@@ -1,4 +1,4 @@
-* 0.5.1svn - ... - release 31/07/2006
+* 0.6svn - ... - release 12/09/2011
 - Added cpuid to hardware section
 - Added fam, ld.so, pam, powerbroker and vas-client sections
 - Improvements to firewall, hardware, kerberos, php, rsync, security and xinetd sections
@@ -8,6 +8,8 @@
 - Added awstats, heartbeat, l2tpd, ldirectord, ppp, proftpd, vsftpd, x2ltpd (Tuomo Soini)
 - Added /etc/dconf.d/ to allow configuration components to reside in seperate files (Gavin Carr)
 - Added minimal AIX, HP/UX and Solaris sections, need someone to take ownership
+- Replace popen2 with subprocess for newer python versions
+- Replace sha1 and md5 with hashlib for newer python versions
 
 * 0.5.1 - Munchkin - release 30/07/2006
 - Fixed -q option to not require argument (Stelios Bounanos)

@@ -1,8 +1,36 @@
 #!/usr/bin/env python
 
-import os, sys, glob, re, shutil, getopt, popen2, time, fnmatch
-import ConfigParser, urlparse, pwd, grp, stat, syslog
-import difflib, gzip, md5, sha
+import os
+import sys
+import glob
+import re
+import shutil
+import getopt
+import subprocess
+import time
+import fnmatch
+import ConfigParser
+import urlparse
+import pwd
+import grp
+import stat
+import syslog
+import difflib
+import gzip
+
+# Python >= 2.5
+try:
+    from hashlib import md5 as md5hash
+# Python <= 2.4
+except ImportError:
+    from md5 import new as md5hash
+
+# Python >= 2.5
+try:
+    from hashlib import sha1 as sha1hash
+# Python <= 2.4
+except ImportError:
+    from sha import new as sha1hash
 
 VERSION = '0.5.1svn'
 
@@ -151,7 +179,7 @@ def dzopen(filename, arg='r'):
 
 def md5sum(filename):
     "Return md5 from file"
-    md5o = md5.new(); f = dzopen(filename); md5o.update(f.read()); f.close()
+    md5o = md5hash(); f = dzopen(filename); md5o.update(f.read()); f.close()
     return md5o
 
 ### FIXME: Also check timestamps/owner/perms
@@ -166,7 +194,7 @@ def md5check(h, filename):
 
 def sha1sum(filename):
     "Return sha1 from file"
-    sha1o = sha.new(); f = dzopen(filename); sha1o.update(f.read()); f.close()
+    sha1o = sha1hash(); f = dzopen(filename); sha1o.update(f.read()); f.close()
     return sha1o
 
 ### BOGUS function, rpmdb only has md5 ?
@@ -409,8 +437,8 @@ def main():
                 owner, group = getowner(uid, gid)
                 title = '--[ Cmd: %s %s ]--(%04o, %s, %s, %s)--' % (cmd, extra, stat.S_IMODE(mode), owner, group, size)
                 log.write(title + '-' * (80 - len(title)) + '\n')
-                (o, i) = popen2.popen4('%s %s' % (cmd, extra))
-                log.write(o.read() + '\n')
+                p = subprocess.Popen(['%s %s' % (cmd, extra)], shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+                log.write(p.stdout.read() + '\n')
 
         if cf.sections[section].has_key('files'):
             for line in cf.sections[section]['files']:
@@ -446,8 +474,8 @@ def main():
                     owner, group = getowner(uid, gid)
                     title = '--[ File: %s %s]--(%04o, %s, %s, %s)--' % (file, extra, stat.S_IMODE(mode), owner, group, size)
                     log.write(title + '-' * (80 - len(title)) + '\n')
-                    (o, i) = popen2.popen4('cat %s %s' % (file, extra))
-                    log.write(o.read() + '\n')
+                    p = subprocess.Popen(['cat %s %s' % (file, extra)], shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+                    log.write(p.stdout.read() + '\n')
     log.close()
 
     syslog.syslog('Dconf %s ended succesfully.' % VERSION)
