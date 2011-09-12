@@ -19,7 +19,7 @@ import gzip
 
 # Python >= 2.4
 try:
-    import subprocess2
+    import subprocess
 except ImportError:
     import popen2
 
