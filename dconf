@@ -6,7 +6,6 @@ import glob
 import re
 import shutil
 import getopt
-import subprocess
 import time
 import fnmatch
 import ConfigParser
@@ -17,6 +16,12 @@ import stat
 import syslog
 import difflib
 import gzip
+
+# Python >= 2.4
+try:
+    import subprocess
+except ImportError:
+    import popen2
 
 # Python >= 2.5
 try:
@@ -437,8 +442,12 @@ def main():
                 owner, group = getowner(uid, gid)
                 title = '--[ Cmd: %s %s ]--(%04o, %s, %s, %s)--' % (cmd, extra, stat.S_IMODE(mode), owner, group, size)
                 log.write(title + '-' * (80 - len(title)) + '\n')
-                p = subprocess.Popen(['%s %s' % (cmd, extra)], shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
-                log.write(p.stdout.read() + '\n')
+                try:
+                    p = subprocess.Popen(['%s %s' % (cmd, extra)], shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+                    log.write(p.stdout.read() + '\n')
+                except:
+                    (o, i) = popen2.popen4('%s %s' % (cmd, extra))
+                    log.write(o.read() + '\n')
 
         if cf.sections[section].has_key('files'):
             for line in cf.sections[section]['files']:
@@ -474,8 +483,12 @@ def main():
                     owner, group = getowner(uid, gid)
                     title = '--[ File: %s %s]--(%04o, %s, %s, %s)--' % (file, extra, stat.S_IMODE(mode), owner, group, size)
                     log.write(title + '-' * (80 - len(title)) + '\n')
-                    p = subprocess.Popen(['cat %s %s' % (file, extra)], shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
-                    log.write(p.stdout.read() + '\n')
+                    try:
+                        p = subprocess.Popen(['cat %s %s' % (file, extra)], shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+                        log.write(p.stdout.read() + '\n')
+                    except:
+                        (o, i) = popen2.popen4('cat %s %s' % (file, extra))
+                        log.write(o.read() + '\n')
     log.close()
 
     syslog.syslog('Dconf %s ended succesfully.' % VERSION)
