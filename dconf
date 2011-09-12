@@ -19,7 +19,7 @@ import gzip
 
 # Python >= 2.4
 try:
-    import subprocess
+    import subprocess2
 except ImportError:
     import popen2
 
@@ -445,7 +445,7 @@ def main():
                 try:
                     p = subprocess.Popen(['%s %s' % (cmd, extra)], shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
                     log.write(p.stdout.read() + '\n')
-                except:
+                except NameError:
                     (o, i) = popen2.popen4('%s %s' % (cmd, extra))
                     log.write(o.read() + '\n')
 
@@ -486,7 +486,7 @@ def main():
                     try:
                         p = subprocess.Popen(['cat %s %s' % (file, extra)], shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
                         log.write(p.stdout.read() + '\n')
-                    except:
+                    except NameError:
                         (o, i) = popen2.popen4('cat %s %s' % (file, extra))
                         log.write(o.read() + '\n')
     log.close()
